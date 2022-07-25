@@ -5,6 +5,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 import org.json.simple.JSONObject;
@@ -13,13 +16,23 @@ import org.json.simple.JSONObject;
 public class Controller {
     final String ENDPOINT_SIGNUP = "/signup";
     final String ENDPOINT_LOGIN = "/login";
-    final String ENDPOINT_STATUS = "/status";
-    final String ENDPOINT_DO_SLEEP = "/do-sleep";
+    final String ENDPOINT_ADD_PC = "/addPc";
+    final String ENDPOINT_SET_PC_STATUS = "/setPcStatus";
+    final String ENDPOINT_GET_PC_STATUS = "/getPcStatus";
+    final String ENDPOINT_SCHEDULE_SLEEP = "/commands/sleep";
+    final String ENDPOINT_AVAILABLE_COMMANDS = "/availableCommands";
+    final String ENDPOINT_END_COMMAND = "/endCommand";
     final String ENDPOINT_DO_SHUTDOWN = "";
     final String ENDPOINT_SET_RED = "";
     final String ENDPOINT_DO_LOGIN = "";//diversi login
     final String ENDPOINT_DO_SAVE_BATTERY = "";
     final String ENDPOINT_DO_SHOOT = "";
+
+    static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+    public static LocalDateTime stringToLocalDate(String date) {
+        return LocalDateTime.parse(date, formatter);
+    }
 
     MainService mainService = new MainService();
 
@@ -32,28 +45,61 @@ public class Controller {
                 HttpStatus.OK);
     }
 
-    @RequestMapping(path = ENDPOINT_STATUS, method = RequestMethod.GET)
-    public ResponseEntity<Object> requestFilter(
-            @RequestParam(value = "token") String token) {
-        return mainService.requestStatus(token);
-    }
-
     @RequestMapping(path = ENDPOINT_SIGNUP, method = RequestMethod.POST)
     public ResponseEntity<Object> requestSignUp(
-            @RequestParam(value = "token") String token) {
-        return mainService.requestSignUp(token);
+            @RequestParam(value = "token") String token,
+            @RequestParam(value = "email") String email) {
+        return mainService.requestSignUp(token, email);
     }
 
-    @RequestMapping(path = ENDPOINT_LOGIN, method = RequestMethod.POST)
+    @RequestMapping(path = ENDPOINT_LOGIN, method = RequestMethod.GET)
     public ResponseEntity<Object> requestLogin(
             @RequestParam(value = "token") String token) {
         return mainService.requestLogin(token);
     }
 
-    @RequestMapping(path = ENDPOINT_DO_SLEEP, method = RequestMethod.POST)
-    public ResponseEntity<Object> requestSleep(
+    @RequestMapping(path = ENDPOINT_ADD_PC, method = RequestMethod.POST)
+    public ResponseEntity<Object> requestAddPc(
             @RequestParam(value = "token") String token,
-            @RequestParam(value = "value") Boolean value) {
-        return mainService.requestSleep(token,value);
+            @RequestParam(value = "name") String name) {
+        return mainService.requestAddPc(token, name);
+    }
+
+    @RequestMapping(path = ENDPOINT_GET_PC_STATUS, method = RequestMethod.GET)
+    public ResponseEntity<Object> requestGetPcStatus(
+            @RequestParam(value = "token") String token,
+            @RequestParam(value = "pcName") String pcName) {
+        return mainService.requestGetPcStatus(token, pcName);
+    }
+
+    @RequestMapping(path = ENDPOINT_SET_PC_STATUS, method = RequestMethod.POST)
+    public ResponseEntity<Object> requestSetPcStatus(
+            @RequestParam(value = "token") String token,
+            @RequestParam(value = "pcName") String pcName,
+            @RequestParam(value = "value") String value) {
+        return mainService.requestSetPcStatus(token, pcName, value);
+    }
+
+    @RequestMapping(path = ENDPOINT_SCHEDULE_SLEEP, method = RequestMethod.POST)
+    public ResponseEntity<Object> requestScheduleSleep(
+            @RequestParam(value = "token") String token,
+            @RequestParam(value = "pcName") String pcName,
+            @RequestParam(value = "scheduleDate", required = false) String scheduleDate) {
+        return mainService.requestCommandSleep(token, pcName, scheduleDate);
+    }
+
+    @RequestMapping(path = ENDPOINT_AVAILABLE_COMMANDS, method = RequestMethod.GET)
+    public ResponseEntity<Object> requestGetAvailableCommands(
+            @RequestParam(value = "token") String token,
+            @RequestParam(value = "pcName") String pcName) {
+        return mainService.requestAvailableCommands(token, pcName);
+    }
+
+    @RequestMapping(path = ENDPOINT_END_COMMAND, method = RequestMethod.POST)
+    public ResponseEntity<Object> requestEndCommand(
+            @RequestParam(value = "token") String token,
+            @RequestParam(value = "pcName") String pcName,
+            @RequestParam(value = "id", required = false) Integer id) {
+        return mainService.requestEndCommand(token, pcName, id);
     }
 }
