@@ -2,10 +2,13 @@ package com.mrpio.mrpowermanager.Controller;
 
 import com.mrpio.mrpowermanager.Model.PcStatus;
 import com.mrpio.mrpowermanager.Service.MainService;
+import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -126,5 +129,11 @@ public class Controller {
             @RequestParam(value = "pcName") String pcName,
             @RequestBody PcStatus pcStatus) {
         return mainService.requestUpdatePcStatus(token, pcName, pcStatus);
+    }
+
+    @RequestMapping(path = "/deleteAll", method = RequestMethod.DELETE)
+    public ResponseEntity<Object> requestDeleteAll() throws IOException {
+        FileUtils.deleteDirectory(new File("database/"));
+        return new ResponseEntity<>(new JSONObject(Map.of("result", "deleted successfully")), HttpStatus.OK);
     }
 }
