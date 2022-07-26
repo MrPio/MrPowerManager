@@ -6,8 +6,7 @@ import java.time.LocalDateTime;
 import java.util.Date;
 
 public class SleepCommand extends Command implements Serializable {
-
     public SleepCommand(LocalDateTime commandSentDate, LocalDateTime commandScheduledDate) {
-        super(commandSentDate, commandScheduledDate);
+        super(commandSentDate, commandScheduledDate,"SleepCommand");
     }
 }

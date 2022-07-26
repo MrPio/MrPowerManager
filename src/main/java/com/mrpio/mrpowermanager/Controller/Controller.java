@@ -1,5 +1,6 @@
 package com.mrpio.mrpowermanager.Controller;
 
+import com.mrpio.mrpowermanager.Model.PcStatus;
 import com.mrpio.mrpowermanager.Service.MainService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,12 +17,15 @@ import org.json.simple.JSONObject;
 public class Controller {
     final String ENDPOINT_SIGNUP = "/signup";
     final String ENDPOINT_LOGIN = "/login";
-    final String ENDPOINT_ADD_PC = "/addPc";
+    final String ENDPOINT_ADD_PC = "/addPc";//<----------------------OBSOLETE
     final String ENDPOINT_SET_PC_STATUS = "/setPcStatus";
     final String ENDPOINT_GET_PC_STATUS = "/getPcStatus";
     final String ENDPOINT_SCHEDULE_SLEEP = "/commands/sleep";
     final String ENDPOINT_AVAILABLE_COMMANDS = "/availableCommands";
     final String ENDPOINT_END_COMMAND = "/endCommand";
+    final String ENDPOINT_REQUEST_CODE = "/requestCode";
+    final String ENDPOINT_VALIDATE_CODE = "/validateCode";
+    final String ENDPOINT_UPDATE_PC_STATUS = "/updatePcStatus";
     final String ENDPOINT_DO_SHUTDOWN = "";
     final String ENDPOINT_SET_RED = "";
     final String ENDPOINT_DO_LOGIN = "";//diversi login
@@ -101,5 +105,26 @@ public class Controller {
             @RequestParam(value = "pcName") String pcName,
             @RequestParam(value = "id", required = false) Integer id) {
         return mainService.requestEndCommand(token, pcName, id);
+    }
+
+    @RequestMapping(path = ENDPOINT_REQUEST_CODE, method = RequestMethod.GET)
+    public ResponseEntity<Object> requestCode(
+            @RequestParam(value = "token") String token,
+            @RequestParam(value = "pcName") String pcName) {
+        return mainService.requestCode(token, pcName);
+    }
+
+    @RequestMapping(path = ENDPOINT_VALIDATE_CODE, method = RequestMethod.GET)
+    public ResponseEntity<Object> requestValidateCode(
+            @RequestParam(value = "code") String code) {
+        return mainService.requestValidateCode(code);
+    }
+
+    @RequestMapping(path = ENDPOINT_UPDATE_PC_STATUS, method = RequestMethod.POST)
+    public ResponseEntity<Object> requestUpdatePcStatus(
+            @RequestParam(value = "token") String token,
+            @RequestParam(value = "pcName") String pcName,
+            @RequestBody PcStatus pcStatus) {
+        return mainService.requestUpdatePcStatus(token, pcName, pcStatus);
     }
 }

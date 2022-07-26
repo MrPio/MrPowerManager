@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.Date;
 
 public abstract class Command implements Serializable {
+    private String commandName;
     private int id;
     private LocalDateTime commandSentDate;
     private LocalDateTime commandScheduledDate;
@@ -13,9 +14,14 @@ public abstract class Command implements Serializable {
     private LocalDateTime commandDoneDate;
     private boolean done;
 
-    public Command(LocalDateTime commandSentDate, LocalDateTime commandScheduledDate) {
+    public Command(LocalDateTime commandSentDate, LocalDateTime commandScheduledDate, String commandName) {
         this.commandSentDate = commandSentDate;
         this.commandScheduledDate = commandScheduledDate;
+        this.commandName=commandName;
+    }
+
+    public String getCommandName() {
+        return commandName;
     }
 
     public int getId() {

@@ -1,9 +1,7 @@
 package com.mrpio.mrpowermanager.Service;
 
 import com.mrpio.mrpowermanager.Controller.Controller;
-import com.mrpio.mrpowermanager.Model.Pc;
-import com.mrpio.mrpowermanager.Model.SleepCommand;
-import com.mrpio.mrpowermanager.Model.User;
+import com.mrpio.mrpowermanager.Model.*;
 import org.json.simple.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -102,8 +100,8 @@ public class MainService {
             var pc = user.getPc(pcName);
             if (pc == null)
                 return new ResponseEntity<>(new JSONObject(Map.of("result", "pc not found!")), HttpStatus.OK);
-            else{
-                var result=pc.listAvailableCommands();
+            else {
+                var result = pc.listAvailableCommands();
                 user.save();
                 return new ResponseEntity<>(new JSONObject(Map.of("result", "list received successfully!",
                         "commands", result)), HttpStatus.OK);
@@ -126,4 +124,36 @@ public class MainService {
             }
         }
     }
+
+    public ResponseEntity<Object> requestCode(String token, String pcName) {
+        var user = User.load(token);
+        if (user == null)
+            return new ResponseEntity<>(new JSONObject(Map.of("result", "unknown user!")), HttpStatus.OK);
+        else {
+            var code = Code.generateCode(token, pcName);
+            return new ResponseEntity<>(new JSONObject(Map.of("result", "code generated successfully!", "code", code)), HttpStatus.OK);
+        }
+    }
+
+    public ResponseEntity<Object> requestValidateCode(String code) {
+        return Code.validateCode(code);
+
+    }
+
+    public ResponseEntity<Object> requestUpdatePcStatus(String token,String pcName, PcStatus pcStatus) {
+        var user = User.load(token);
+        if (user == null)
+            return new ResponseEntity<>(new JSONObject(Map.of("result", "unknown user!")), HttpStatus.OK);
+        else {
+            var pc = user.getPc(pcName);
+            if (pc == null)
+                return new ResponseEntity<>(new JSONObject(Map.of("result", "pc not found!")), HttpStatus.OK);
+            else {
+                pc.updatePcStatus(pcStatus);
+                user.save();
+                return new ResponseEntity<>(new JSONObject(Map.of("result", "pc status updated successfully!")), HttpStatus.OK);
+            }
+        }
+    }
 }
+

@@ -13,14 +13,20 @@ public class Pc implements Serializable {
     private String name;
     private State state = State.OFFLINE;
     private ArrayList<Command> commandList;
+    private PcStatus pcStatus;
 
     public Pc(String name) {
         this.name = name;
         commandList = new ArrayList<>();
+        pcStatus = new PcStatus();
     }
 
     public String getName() {
         return name;
+    }
+
+    public PcStatus getPcStatus() {
+        return pcStatus;
     }
 
     public State getState() {
@@ -72,5 +78,9 @@ public class Pc implements Serializable {
                 }
             }
         return "id not found!";
+    }
+
+    public void updatePcStatus(PcStatus pcStatus) {
+        this.pcStatus = pcStatus;
     }
 }
