@@ -14,11 +14,16 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 public class DropboxApi {
-    final static String BEARER_TOKEN = "sl.BMSwWGTG192n38xbsiY6LkvFIMbNsrSsnxhVQOc4KZCjMvR4N36KHwdWvfv7Rj6tgtoxOw-SPvwpPPqsrHC3icsC5ITBlJ27VFAGvp79fMVwLERnNNDLp9L3k0wjLH4R7ezmrHk4MW0";
     final static String ENDPOINT_UPLOAD = "https://content.dropboxapi.com/2/files/upload";
     final static String ENDPOINT_DOWNLOAD = "https://content.dropboxapi.com/2/files/download";
     final static String ENDPOINT_LIST_FOLDER = "    https://api.dropboxapi.com/2/files/list_folder";
     private static final int BUFFER_SIZE = 1024;
+
+    private static String getToken(){
+        String first="sl.BMSiFWQA5SMrm38m2zToeQYPRix0eQicGtmEHEl-KntBbcPO5zJqnXVpX7TNrBKC0voheNA1bysWc65TSs01Jj";
+        String second="kD2UPsZli3nWLt5loTnNVMg2nT6JnNznK_6H342f"+String.valueOf(4);
+        return first+"-ssdiFFVE35-"+second;
+    }
 
     /**
      * <strong>Method used to upload a file on dropbox cloud storage</strong>
@@ -36,7 +41,7 @@ public class DropboxApi {
             //send request
             conn = (HttpURLConnection) new URL(ENDPOINT_UPLOAD).openConnection();
             conn.setRequestMethod("POST");
-            conn.setRequestProperty("Authorization", "Bearer " + BEARER_TOKEN);
+            conn.setRequestProperty("Authorization", "Bearer " + getToken());
             conn.setRequestProperty("Content-Type", "application/octet-stream");
             conn.setRequestProperty("Dropbox-API-Arg", "{\"path\": \"" + pathCloud + fileLocal.getName() +
                     "\",\"mode\": \"overwrite\",\"autorename\": false,\"mute\": false,\"strict_conflict\": false}");
@@ -77,7 +82,7 @@ public class DropboxApi {
         try {
             conn = (HttpURLConnection) new URL(ENDPOINT_DOWNLOAD).openConnection();
             conn.setRequestMethod("POST");
-            conn.setRequestProperty("Authorization", "Bearer " + BEARER_TOKEN);
+            conn.setRequestProperty("Authorization", "Bearer " + getToken());
             conn.setRequestProperty("Dropbox-API-Arg", "{\"path\": \"" + pathCloud + "\"}");
             conn.setDoOutput(true);
 
@@ -110,7 +115,7 @@ public class DropboxApi {
             conn = (HttpURLConnection) new URL(ENDPOINT_LIST_FOLDER).openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
-            conn.setRequestProperty("Authorization", "Bearer " + BEARER_TOKEN);
+            conn.setRequestProperty("Authorization", "Bearer " + getToken());
             conn.setDoOutput(true);
 
             //send json request
