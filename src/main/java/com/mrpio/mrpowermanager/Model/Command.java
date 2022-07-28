@@ -20,7 +20,8 @@ public class Command implements Serializable {
         HIBERNATE,
         SHUTDOWN,
         LOCK,
-        SAVE_BATTERY,
+        SAVE_BATTERY_ON,
+        SAVE_BATTERY_OFF,
 
         WIFI_ON,
         WIFI_OFF,
