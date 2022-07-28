@@ -36,7 +36,7 @@ public class Command implements Serializable {
 
         SCREENSHOT;
 
-        int value = 50;
+        private int value = 50;
 
         public int getValue() {
             return value;
@@ -71,6 +71,10 @@ public class Command implements Serializable {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public int getCommandValue(){
+        return command.getValue();
     }
 
     public LocalDateTime getCommandSentDate() {
