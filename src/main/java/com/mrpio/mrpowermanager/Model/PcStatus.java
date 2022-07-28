@@ -47,6 +47,30 @@ public class PcStatus implements Serializable {
         updated=LocalDateTime.now();
     }
 
+    public boolean isAirplane() {
+        return airplane;
+    }
+
+    public boolean isMute() {
+        return mute;
+    }
+
+    public boolean isRedLight() {
+        return redLight;
+    }
+
+    public boolean isSaveBattery() {
+        return saveBattery;
+    }
+
+    public boolean isHotspot() {
+        return hotspot;
+    }
+
+    public int getRedLightLevel() {
+        return redLightLevel;
+    }
+
     public boolean isWifi() {
         return wifi;
     }
