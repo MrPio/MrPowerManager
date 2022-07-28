@@ -1,5 +1,6 @@
 package com.mrpio.mrpowermanager.Controller;
 
+import com.mrpio.mrpowermanager.Model.Command;
 import com.mrpio.mrpowermanager.Model.PcStatus;
 import com.mrpio.mrpowermanager.Service.MainService;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
@@ -23,7 +24,7 @@ public class Controller {
     final String ENDPOINT_ADD_PC = "/addPc";//<----------------------OBSOLETE
     final String ENDPOINT_SET_PC_STATUS = "/setPcStatus";
     final String ENDPOINT_GET_PC_STATUS = "/getPcStatus";
-    final String ENDPOINT_SCHEDULE_SLEEP = "/commands/sleep";
+    final String ENDPOINT_SCHEDULE_COMMAND = "/scheduleCommand";
     final String ENDPOINT_AVAILABLE_COMMANDS = "/availableCommands";
     final String ENDPOINT_END_COMMAND = "/endCommand";
     final String ENDPOINT_REQUEST_CODE = "/requestCode";
@@ -87,12 +88,16 @@ public class Controller {
         return mainService.requestSetPcStatus(token, pcName, value);
     }
 
-    @RequestMapping(path = ENDPOINT_SCHEDULE_SLEEP, method = RequestMethod.POST)
+    @RequestMapping(path = ENDPOINT_SCHEDULE_COMMAND, method = RequestMethod.POST)
     public ResponseEntity<Object> requestScheduleSleep(
             @RequestParam(value = "token") String token,
             @RequestParam(value = "pcName") String pcName,
+            @RequestParam(value = "command") Command.Commands command,
+            @RequestParam(value = "value", defaultValue = "50") Integer value,
             @RequestParam(value = "scheduleDate", required = false) String scheduleDate) {
-        return mainService.requestCommandSleep(token, pcName, scheduleDate);
+        if (0 <= value && value <= 100)
+            command.setValue(value);
+        return mainService.requestScheduleCommand(token, pcName, command, scheduleDate);
     }
 
     @RequestMapping(path = ENDPOINT_AVAILABLE_COMMANDS, method = RequestMethod.GET)

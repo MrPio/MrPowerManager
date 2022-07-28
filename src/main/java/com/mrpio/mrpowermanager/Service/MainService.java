@@ -74,7 +74,7 @@ public class MainService {
         }
     }
 
-    public ResponseEntity<Object> requestCommandSleep(String token, String pcName, String scheduleDate) {
+    public ResponseEntity<Object> requestScheduleCommand(String token, String pcName, Command.Commands command, String scheduleDate) {
         var user = User.load(token);
         if (user == null)
             return new ResponseEntity<>(new JSONObject(Map.of("result", "unknown user!")), HttpStatus.OK);
@@ -85,7 +85,7 @@ public class MainService {
             else {
                 var now = LocalDateTime.now();
                 var scheduleDateNew = scheduleDate == null ? now : Controller.stringToLocalDate(scheduleDate);
-                var result = pc.addCommand(new SleepCommand(now, scheduleDateNew));
+                var result = pc.addCommand(new Command(command, now, scheduleDateNew));
                 user.save();
                 return new ResponseEntity<>(new JSONObject(Map.of("result", result)), HttpStatus.OK);
             }
@@ -103,8 +103,11 @@ public class MainService {
             else {
                 var result = pc.listAvailableCommands();
                 user.save();
+                var httpStatus=HttpStatus.OK;
+                if(result.size()==0)
+                    httpStatus=HttpStatus.NO_CONTENT;
                 return new ResponseEntity<>(new JSONObject(Map.of("result", "list received successfully!",
-                        "commands", result)), HttpStatus.OK);
+                        "commands", result)), httpStatus);
             }
         }
     }
@@ -140,7 +143,7 @@ public class MainService {
 
     }
 
-    public ResponseEntity<Object> requestUpdatePcStatus(String token,String pcName, PcStatus pcStatus) {
+    public ResponseEntity<Object> requestUpdatePcStatus(String token, String pcName, PcStatus pcStatus) {
         var user = User.load(token);
         if (user == null)
             return new ResponseEntity<>(new JSONObject(Map.of("result", "unknown user!")), HttpStatus.OK);
@@ -155,5 +158,6 @@ public class MainService {
             }
         }
     }
+
 }
 

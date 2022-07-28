@@ -1,12 +1,53 @@
 package com.mrpio.mrpowermanager.Model;
 
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 
-public abstract class Command implements Serializable {
-    private String commandName;
+public class Command implements Serializable {
+    public enum Commands {
+        SOUND_VALUE,
+        BRIGHTNESS_VALUE,
+
+        RED_LIGHT_ON,
+        RED_LIGHT_OFF,
+        RED_LIGHT_VALUE,
+
+        SLEEP,
+        HIBERNATE,
+        SHUTDOWN,
+        LOCK,
+        SAVE_BATTERY,
+
+        WIFI_ON,
+        WIFI_OFF,
+        BLUETOOTH_ON,
+        BLUETOOTH_OFF,
+        AIRPLANE_ON,
+        AIRPLANE_OFF,
+        HOTSPOT_ON,
+        HOTSPOT_OFF,
+
+        NO_SOUND,
+        SOUND_DOWN,
+        SOUND_UP,
+        PLAY_PAUSE,
+        TRACK_PREVIOUS,
+        TRACK_NEXT,
+
+        SCREENSHOT;
+
+        int value = 50;
+
+        public int getValue() {
+            return value;
+        }
+
+        public void setValue(int value) {
+            this.value = value;
+        }
+    }
+
+    private final Commands command;
     private int id;
     private LocalDateTime commandSentDate;
     private LocalDateTime commandScheduledDate;
@@ -14,14 +55,14 @@ public abstract class Command implements Serializable {
     private LocalDateTime commandDoneDate;
     private boolean done;
 
-    public Command(LocalDateTime commandSentDate, LocalDateTime commandScheduledDate, String commandName) {
+    public Command(Commands command, LocalDateTime commandSentDate, LocalDateTime commandScheduledDate) {
+        this.command = command;
         this.commandSentDate = commandSentDate;
         this.commandScheduledDate = commandScheduledDate;
-        this.commandName=commandName;
     }
 
-    public String getCommandName() {
-        return commandName;
+    public Commands getCommand() {
+        return command;
     }
 
     public int getId() {
