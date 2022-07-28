@@ -40,9 +40,10 @@ public class Pc implements Serializable {
     public String addCommand(Command command) {
         if (command.getCommandScheduledDate().isBefore(command.getCommandSentDate()))
             return "you cannot schedule a command in the past!";
-        for (var c : commandList)
-            if (c.getCommand().equals(command.getCommand())&&!c.isDone() && Math.abs(MINUTES.between(command.getCommandScheduledDate(), command.getCommandScheduledDate())) < 5)
-                return "another command is scheduled at around this time!";
+/*        for (var c : commandList)
+            if (c.getCommand().equals(command.getCommand()) && !c.isDone()
+                    && Math.abs(MINUTES.between(c.getCommandScheduledDate(), command.getCommandScheduledDate())) < 5)
+                return "another command is scheduled at around this time!";*/
 
         command.setId(commandList.size());
         commandList.add(command);
@@ -54,7 +55,7 @@ public class Pc implements Serializable {
     }
 
     public ArrayList<Command> listAvailableCommands() {
-        var now = LocalDateTime.now();
+        var now = LocalDateTime.now().minusMinutes(10);
         var commands = new ArrayList<Command>();
         for (var c : commandList) {
             if (!c.isDone() && now.isBefore(c.getCommandScheduledDate())) {

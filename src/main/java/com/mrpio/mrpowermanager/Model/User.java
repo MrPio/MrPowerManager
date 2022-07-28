@@ -1,5 +1,6 @@
 package com.mrpio.mrpowermanager.Model;
 
+import com.dropbox.core.DbxException;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.mrpio.mrpowermanager.Service.DropboxApi;
 import com.mrpio.mrpowermanager.Service.Serialization;
@@ -41,9 +42,11 @@ public class User implements Serializable {
     public void save() {
         Serialization s = new Serialization(DIR, token + ".dat");
         s.saveObject(this);
-        new Thread(() -> DropboxApi.uploadFile(
-                new File(s.getFullPath()),
-                "\\database\\")).start();
+        new Thread(() -> {
+            DropboxApi.uploadFile(
+                    s.getFullPath(),
+                    "/database/"+s.getFileName());
+        }).start();
     }
 
     public String getEmail() {
@@ -75,10 +78,10 @@ public class User implements Serializable {
             return (User) serialization.loadObject();
 
 
-        String path = "\\database\\";
+        String path = "/database";
         if (DropboxApi.getFilesInFolder(path).contains(token + ".dat")) {
             DropboxApi.downloadFile(
-                    path + token + ".dat",
+                    path +"/"+ token + ".dat",
                     DIR + token + ".dat");
             return (User) serialization.loadObject();
         }

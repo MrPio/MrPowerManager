@@ -1,5 +1,11 @@
 package com.mrpio.mrpowermanager.Service;
 
+import com.dropbox.core.DbxException;
+import com.dropbox.core.DbxRequestConfig;
+import com.dropbox.core.oauth.DbxCredential;
+import com.dropbox.core.v2.DbxClientV2;
+import com.dropbox.core.v2.files.*;
+import com.dropbox.core.v2.users.FullAccount;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -14,25 +20,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 public class DropboxApi {
-    final static String ENDPOINT_UPLOAD = "https://content.dropboxapi.com/2/files/upload";
+/*    final static String ENDPOINT_UPLOAD = "https://content.dropboxapi.com/2/files/upload";
     final static String ENDPOINT_DOWNLOAD = "https://content.dropboxapi.com/2/files/download";
     final static String ENDPOINT_LIST_FOLDER = "    https://api.dropboxapi.com/2/files/list_folder";
     private static final int BUFFER_SIZE = 1024;
 
-    private static String getToken(){
-        String first="sl.BMSiFWQA5SMrm38m2zToeQYPRix0eQicGtmEHEl-KntBbcPO5zJqnXVpX7TNrBKC0voheNA1bysWc65TSs01Jj";
-        String second="kD2UPsZli3nWLt5loTnNVMg2nT6JnNznK_6H342f"+String.valueOf(4);
-        return first+"-ssdiFFVE35-"+second;
-    }
 
-    /**
-     * <strong>Method used to upload a file on dropbox cloud storage</strong>
-     *
-     * @param fileLocal an instance of {@link File} containing the location of local file to upload.
-     * @param pathCloud the directory where to upload the file.
-     * @return an instance of {@link JSONObject} containing the response of Dropbox api.
-     * @see <a href="https://www.dropbox.com/developers/documentation/http/documentation#files-upload">Dropbox HTTP documentation</a>
-     */
     public static JSONObject uploadFile(File fileLocal, String pathCloud) {
         JSONObject result = null;
         pathCloud = pathCloud.replace('\\', '/');
@@ -68,14 +61,6 @@ public class DropboxApi {
         return result;
     }
 
-    /**
-     * <strong>Method used to download a file on a provided path located on dropbox cloud storage </strong>
-     *
-     * @param pathCloud the directory where the file to download is located on cloud.
-     * @param pathLocal the directory where to download the file.
-     * @return a boolean value which notify if everything went fine.
-     * @see <a href="https://www.dropbox.com/developers/documentation/http/documentation#files-download">Dropbox HTTP documentation</a>
-     */
     public static boolean downloadFile(String pathCloud, String pathLocal) {
         pathCloud = pathCloud.replace('\\', '/');
         HttpURLConnection conn = null;
@@ -99,13 +84,6 @@ public class DropboxApi {
         }
     }
 
-    /**
-     * <strong>Method used to list the files inside a provided directory on cloud storage </strong>
-     *
-     * @param folderPath the directory on cloud to check
-     * @return a boolean value which notify if everything went fine.
-     * @see <a href="https://www.dropbox.com/developers/documentation/http/documentation#files-list_folder">Dropbox HTTP documentation</a>
-     */
     public static ArrayList<String> getFilesInFolder(String folderPath) {
         ArrayList<String> result = new ArrayList<>();
         folderPath = folderPath.replace('\\', '/');
@@ -147,5 +125,54 @@ public class DropboxApi {
                 e.printStackTrace();
         }
         return result;
+    }*/
+
+
+
+    public static ArrayList<String> getFilesInFolder(String path) {
+        DbxClientV2 client =new DropboxConfig().DropboxClient();
+
+        ListFolderResult result = null;
+        try {
+            result = client.files().listFolder(path);
+        } catch (DbxException e) {
+            e.printStackTrace();
+        }
+        var list=new ArrayList<String>();
+        while (true) {
+            for (Metadata metadata : result.getEntries())
+                list.add(metadata.getName());
+
+            if (!result.getHasMore())
+                break;
+            try {
+                result = client.files().listFolderContinue(result.getCursor());
+            } catch (DbxException e) {
+                e.printStackTrace();
+            }
+        }
+        return list;
+    }
+
+    public static void uploadFile(String fileLocal, String pathCloud)  {
+        DbxClientV2 client =new DropboxConfig().DropboxClient();
+
+        try (InputStream in = new FileInputStream(fileLocal)) {
+            client.files().uploadBuilder(pathCloud).withMode(WriteMode.OVERWRITE)
+                    .uploadAndFinish(in);
+        } catch (IOException | DbxException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void downloadFile(String pathCloud, String fileLocal) {
+        DbxClientV2 client =new DropboxConfig().DropboxClient();
+
+        try (OutputStream out = new FileOutputStream(fileLocal)) {
+            client.files().downloadBuilder(pathCloud)
+                    .download(out);
+        } catch (IOException | DbxException e) {
+            e.printStackTrace();
+        }
     }
 }

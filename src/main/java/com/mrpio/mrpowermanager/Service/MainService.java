@@ -70,7 +70,7 @@ public class MainService {
             if (pc == null)
                 return new ResponseEntity<>(new JSONObject(Map.of("result", "pc not found!")), HttpStatus.OK);
             else
-                return new ResponseEntity<>(new JSONObject(Map.of("result", "pc state got successfully!", "value", pc.getState())), HttpStatus.OK);
+                return new ResponseEntity<>(new JSONObject(Map.of("result", "pc state gotten successfully!", "value", pc.getState())), HttpStatus.OK);
         }
     }
 
