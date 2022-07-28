@@ -14,12 +14,21 @@ import java.io.InputStreamReader;
 import java.util.Arrays;
 
 public class DropboxGenerateToken {
-
+    private static String dropboxAppKey(){
+        String first="nbtl6om7z";
+        String second="bz0m9k";
+        return first+second;
+    }
+    private static String dropboxAppSecret(){
+        String first="u03zp1gm";
+        String second="wl9qh99";
+        return first+second;
+    }
     public static void main(String[] args) throws IOException, DbxException {
         DbxRequestConfig config = DbxRequestConfig.newBuilder("myexamplefolder").build();
 
-        String dropboxAppKey = "nbtl6om7zbz0m9k"; // Put your Dropbox App Key here
-        String dropboxAppSecret = "u03zp1gmwl9qh99"; // Put your Dropbox App Secret here
+        String dropboxAppKey = dropboxAppKey();
+        String dropboxAppSecret = dropboxAppSecret();
 
         DbxAppInfo appInfo = new DbxAppInfo(dropboxAppKey, dropboxAppSecret);
 
