@@ -1,7 +1,11 @@
 package com.mrpio.mrpowermanager.Model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class Command implements Serializable {
     public enum Commands {
@@ -49,11 +53,18 @@ public class Command implements Serializable {
 
     private final Commands command;
     private int id;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime commandSentDate;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime commandScheduledDate;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime commandReceivedDate;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime commandDoneDate;
+
     private boolean done;
+
 
     public Command(Commands command, LocalDateTime commandSentDate, LocalDateTime commandScheduledDate) {
         this.command = command;
@@ -73,7 +84,7 @@ public class Command implements Serializable {
         this.id = id;
     }
 
-    public int getCommandValue(){
+    public int getCommandValue() {
         return command.getValue();
     }
 
@@ -116,4 +127,6 @@ public class Command implements Serializable {
     public void setDone(boolean done) {
         this.done = done;
     }
+
+
 }

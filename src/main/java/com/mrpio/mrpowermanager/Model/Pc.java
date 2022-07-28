@@ -41,7 +41,7 @@ public class Pc implements Serializable {
         if (command.getCommandScheduledDate().isBefore(command.getCommandSentDate()))
             return "you cannot schedule a command in the past!";
         for (var c : commandList)
-            if (!c.isDone() && Math.abs(MINUTES.between(command.getCommandScheduledDate(), c.getCommandScheduledDate())) < 5)
+            if (!c.isDone() && Math.abs(MINUTES.between(command.getCommandScheduledDate(), command.getCommandScheduledDate())) < 5)
                 return "another command is scheduled at around this time!";
 
         command.setId(commandList.size());

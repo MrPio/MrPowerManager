@@ -1,13 +1,17 @@
 package com.mrpio.mrpowermanager.Model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class PcStatus implements Serializable {
     boolean wifi, bluetooth, batteryPlugged, airplane, mute, redLight, saveBattery, hotspot;
     int sound, brightness, batteryPerc, batteryMinutes, cpuLevel, ramLevel, redLightLevel;
+
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     LocalDateTime updated;
 
     public PcStatus() {

@@ -1,5 +1,6 @@
 package com.mrpio.mrpowermanager.Model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.mrpio.mrpowermanager.Service.DropboxApi;
 import com.mrpio.mrpowermanager.Service.Serialization;
 import org.json.simple.JSONObject;
@@ -8,6 +9,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -15,9 +17,11 @@ import java.util.Date;
 public class User implements Serializable {
     public final static String DIR = "database/";
 
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private LocalDateTime signUpDate;
     private String token, email;
     private ArrayList<Pc> pcList;
+
 
     public User(LocalDateTime signUp, String token, String email) {
         this.signUpDate = signUp;
