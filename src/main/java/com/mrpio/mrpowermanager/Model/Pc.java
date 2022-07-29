@@ -11,7 +11,6 @@ public class Pc implements Serializable {
     public enum State {ONLINE, OFFLINE, PAUSED}
 
     private String name;
-    private State state = State.OFFLINE;
     private ArrayList<Command> commandList;
     private PcStatus pcStatus;
 
@@ -30,7 +29,7 @@ public class Pc implements Serializable {
     }
 
     public State getState() {
-        return state;
+        return Math.abs(SECONDS.between(pcStatus.updated, LocalDateTime.now())) < 30 ? State.ONLINE : State.OFFLINE;
     }
 
     public ArrayList<Command> getCommandList() {
@@ -40,7 +39,9 @@ public class Pc implements Serializable {
     public String addCommand(Command command) {
         if (command.getCommandScheduledDate().isBefore(command.getCommandSentDate()))
             return "you cannot schedule a command in the past!";
-/*        for (var c : commandList)
+/*
+ RIMOSSO PERCHé NON VOGLIO LIMITARE LA QUANTITà DI COMANDI FINO A CHE IL PC NON LI ESEGUE
+ for (var c : commandList)
             if (c.getCommand().equals(command.getCommand()) && !c.isDone()
                     && Math.abs(MINUTES.between(c.getCommandScheduledDate(), command.getCommandScheduledDate())) < 5)
                 return "another command is scheduled at around this time!";*/
@@ -48,10 +49,6 @@ public class Pc implements Serializable {
         command.setId(commandList.size());
         commandList.add(command);
         return "command scheduled successfully!";
-    }
-
-    public void setState(State state) {
-        this.state = state;
     }
 
     public ArrayList<Command> listAvailableCommands() {

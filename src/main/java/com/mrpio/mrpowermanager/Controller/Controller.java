@@ -22,7 +22,6 @@ public class Controller {
     final String ENDPOINT_SIGNUP = "/signup";
     final String ENDPOINT_LOGIN = "/login";
     final String ENDPOINT_ADD_PC = "/addPc";//<----------------------OBSOLETE
-    final String ENDPOINT_SET_PC_STATUS = "/setPcStatus";
     final String ENDPOINT_GET_PC_STATUS = "/getPcStatus";
     final String ENDPOINT_SCHEDULE_COMMAND = "/scheduleCommand";
     final String ENDPOINT_AVAILABLE_COMMANDS = "/availableCommands";
@@ -79,14 +78,7 @@ public class Controller {
             @RequestParam(value = "pcName") String pcName) {
         return mainService.requestGetPcStatus(token, pcName);
     }
-
-    @RequestMapping(path = ENDPOINT_SET_PC_STATUS, method = RequestMethod.POST)
-    public ResponseEntity<Object> requestSetPcStatus(
-            @RequestParam(value = "token") String token,
-            @RequestParam(value = "pcName") String pcName,
-            @RequestParam(value = "value") String value) {
-        return mainService.requestSetPcStatus(token, pcName, value);
-    }
+    
 
     @RequestMapping(path = ENDPOINT_SCHEDULE_COMMAND, method = RequestMethod.POST)
     public ResponseEntity<Object> requestScheduleSleep(

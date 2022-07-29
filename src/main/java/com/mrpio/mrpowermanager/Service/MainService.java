@@ -45,22 +45,6 @@ public class MainService {
     }
 
 
-    public ResponseEntity<Object> requestSetPcStatus(String token, String pcName, String value) {
-        var user = User.load(token);
-        if (user == null)
-            return new ResponseEntity<>(new JSONObject(Map.of("result", "unknown user!")), HttpStatus.OK);
-        else {
-            var pc = user.getPc(pcName);
-            if (pc == null)
-                return new ResponseEntity<>(new JSONObject(Map.of("result", "pc not found!")), HttpStatus.OK);
-            else {
-                pc.setState(Pc.State.valueOf(value));
-                user.save();
-                return new ResponseEntity<>(new JSONObject(Map.of("result", "pc state set successfully!")), HttpStatus.OK);
-            }
-        }
-    }
-
     public ResponseEntity<Object> requestGetPcStatus(String token, String pcName) {
         var user = User.load(token);
         if (user == null)
@@ -103,9 +87,9 @@ public class MainService {
             else {
                 var result = pc.listAvailableCommands();
                 user.save();
-                var httpStatus=HttpStatus.OK;
-                if(result.size()==0)
-                    httpStatus=HttpStatus.NO_CONTENT;
+                var httpStatus = HttpStatus.OK;
+                if (result.size() == 0)
+                    httpStatus = HttpStatus.NO_CONTENT;
                 return new ResponseEntity<>(new JSONObject(Map.of("result", "list received successfully!",
                         "commands", result)), httpStatus);
             }
