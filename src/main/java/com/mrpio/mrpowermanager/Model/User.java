@@ -18,7 +18,7 @@ import java.util.Date;
 public class User implements Serializable {
     public final static String DIR = "database/";
 
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime signUpDate;
     private String token, email;
     private ArrayList<Pc> pcList;
@@ -42,11 +42,9 @@ public class User implements Serializable {
     public void save() {
         Serialization s = new Serialization(DIR, token + ".dat");
         s.saveObject(this);
-        new Thread(() -> {
-            DropboxApi.uploadFile(
-                    s.getFullPath(),
-                    "/database/"+s.getFileName());
-        }).start();
+        new Thread(() -> DropboxApi.uploadFile(
+                s.getFullPath(),
+                "/database/" + s.getFileName())).start();
     }
 
     public String getEmail() {
@@ -81,7 +79,7 @@ public class User implements Serializable {
         String path = "/database";
         if (DropboxApi.getFilesInFolder(path).contains(token + ".dat")) {
             DropboxApi.downloadFile(
-                    path +"/"+ token + ".dat",
+                    path + "/" + token + ".dat",
                     DIR + token + ".dat");
             return (User) serialization.loadObject();
         }
@@ -93,5 +91,9 @@ public class User implements Serializable {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("user", this);
         return jsonObject;
+    }
+
+    public boolean removePc(String pcName) {
+        return pcList.removeIf(pc -> pc.getName().equals(pcName));
     }
 }

@@ -3,25 +3,37 @@ package com.mrpio.mrpowermanager.Model;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import static java.time.temporal.ChronoUnit.*;
 
 public class Pc implements Serializable {
 
     public enum State {ONLINE, OFFLINE, PAUSED}
+    public enum PasswordType{
+        WINDOWS
+    }
 
     private String name;
     private ArrayList<Command> commandList;
     private PcStatus pcStatus;
+    private HashMap<PasswordType,String> passwords;
+    private HashMap<PasswordType,String> keys;
 
     public Pc(String name) {
         this.name = name;
         commandList = new ArrayList<>();
         pcStatus = new PcStatus();
+        passwords=new HashMap<>();
+        keys=new HashMap<>();
     }
 
     public String getName() {
         return name;
+    }
+
+    public HashMap<PasswordType, String> getPasswords() {
+        return passwords;
     }
 
     public PcStatus getPcStatus() {
@@ -60,6 +72,8 @@ public class Pc implements Serializable {
                     c.setCommandReceivedDate(now);
                 commands.add(c);
             }
+            else if(c.isDone()||MINUTES.between(now,c.getCommandScheduledDate())<-15)
+                commandList.remove(c);
         }
         return commands;
     }
@@ -81,4 +95,16 @@ public class Pc implements Serializable {
     public void updatePcStatus(PcStatus pcStatus) {
         this.pcStatus = pcStatus;
     }
+
+    public void storePassword(PasswordType passwordType,String password){
+        this.passwords.put(passwordType,password);
+    }
+
+    public void storeKey(PasswordType passwordType,String key){
+        keys.put(passwordType,key);
+    }
+    public String requestKey(PasswordType passwordType){
+        return keys.remove(passwordType);
+    }
+
 }

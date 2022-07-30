@@ -5,6 +5,9 @@ import com.mrpio.mrpowermanager.Service.DropboxApi;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.time.LocalDateTime;
+
+import static java.time.temporal.ChronoUnit.MINUTES;
 
 class DropboxApiTest {
     final String desktopPath = System.getProperty("user.home") + "/Desktop/";
@@ -27,5 +30,10 @@ class DropboxApiTest {
         DropboxApi.downloadFile(
                 "/database/test.txt",
                 desktopPath + "test2.txt");
+    }
+    @Test
+    void dateTest(){
+        var now = LocalDateTime.now().minusMinutes(10);
+        System.out.println(MINUTES.between(LocalDateTime.now(),now));
     }
 }

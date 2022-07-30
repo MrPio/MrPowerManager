@@ -175,4 +175,13 @@ public class DropboxApi {
             e.printStackTrace();
         }
     }
+
+    public static void deleteFile(String pathCloud) {
+        DbxClientV2 client =new DropboxConfig().DropboxClient();
+        try {
+            client.files().deleteV2(pathCloud);
+        } catch (DbxException e) {
+            e.printStackTrace();
+        }
+    }
 }

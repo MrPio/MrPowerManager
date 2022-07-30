@@ -6,15 +6,18 @@ import org.json.simple.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.io.File;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+import static com.mrpio.mrpowermanager.Model.User.DIR;
+
 public class MainService {
 
     public ResponseEntity<Object> requestSignUp(String token, String email) {
-        Serialization serialization = new Serialization(User.DIR, token + ".dat");
+        Serialization serialization = new Serialization(DIR, token + ".dat");
         if (serialization.existFile())
             return new ResponseEntity<>(new JSONObject(Map.of("result", "user already in database!")), HttpStatus.OK);
         (new User(LocalDateTime.now(), token, email)).save();
@@ -43,7 +46,6 @@ public class MainService {
             return new ResponseEntity<>(new JSONObject(Map.of("result", "pc added successfully!")), HttpStatus.OK);
         }
     }
-
 
     public ResponseEntity<Object> requestGetPcStatus(String token, String pcName) {
         var user = User.load(token);
@@ -143,5 +145,86 @@ public class MainService {
         }
     }
 
+    public ResponseEntity<Object> requestStorePassword(String token, String pcName, Pc.PasswordType passwordType, String password) {
+        var user = User.load(token);
+        if (user == null)
+            return new ResponseEntity<>(new JSONObject(Map.of("result", "unknown user!")), HttpStatus.OK);
+        else {
+            var pc = user.getPc(pcName);
+            if (pc == null)
+                return new ResponseEntity<>(new JSONObject(Map.of("result", "pc not found!")), HttpStatus.OK);
+            else {
+                pc.storePassword(passwordType, password);
+                user.save();
+                return new ResponseEntity<>(new JSONObject(Map.of("result", "password stored successfully!")), HttpStatus.OK);
+            }
+        }
+    }
+
+    public ResponseEntity<Object> requestSendKey(String token, String pcName, Pc.PasswordType passwordType, String key) {
+        var user = User.load(token);
+        if (user == null)
+            return new ResponseEntity<>(new JSONObject(Map.of("result", "unknown user!")), HttpStatus.OK);
+        else {
+            var pc = user.getPc(pcName);
+            if (pc == null)
+                return new ResponseEntity<>(new JSONObject(Map.of("result", "pc not found!")), HttpStatus.OK);
+            else {
+                pc.storeKey(passwordType, key);
+                user.save();
+                return new ResponseEntity<>(new JSONObject(Map.of("result", "key stored successfully!")), HttpStatus.OK);
+            }
+        }
+    }
+
+    public ResponseEntity<Object> requestRequestKey(String token, String pcName, Pc.PasswordType passwordType) {
+        var user = User.load(token);
+        if (user == null)
+            return new ResponseEntity<>(new JSONObject(Map.of("result", "unknown user!")), HttpStatus.OK);
+        else {
+            var pc = user.getPc(pcName);
+            if (pc == null)
+                return new ResponseEntity<>(new JSONObject(Map.of("result", "pc not found!")), HttpStatus.OK);
+            else {
+                var key = pc.requestKey(passwordType);
+                user.save();
+                if (key == null)
+                    return new ResponseEntity<>(new JSONObject(Map.of("result", "key not found!")), HttpStatus.OK);
+                return new ResponseEntity<>(new JSONObject(Map.of("result", "password stored successfully!", "key", key)), HttpStatus.OK);
+            }
+        }
+
+    }
+
+    public ResponseEntity<Object> requestDeleteAccount(String token, String email) {
+        var user = User.load(token);
+        if (user == null)
+            return new ResponseEntity<>(new JSONObject(Map.of("result", "unknown user!")), HttpStatus.OK);
+        else {
+            if (user.getEmail().trim().equals(email.trim())) {
+                var file = new File(DIR, token + ".dat");
+                file.delete();
+                new Thread(() -> DropboxApi.deleteFile("/database/" + token + ".dat")).start();
+                return new ResponseEntity<>(new JSONObject(Map.of("result", "account deleted successfully!")), HttpStatus.OK);
+            }
+            return new ResponseEntity<>(new JSONObject(Map.of("result", "the email wasn't correct!")), HttpStatus.OK);
+        }
+    }
+
+    public ResponseEntity<Object> requestDeletePc(String token, String pcName) {
+        var user = User.load(token);
+        if (user == null)
+            return new ResponseEntity<>(new JSONObject(Map.of("result", "unknown user!")), HttpStatus.OK);
+        else {
+            var pc = user.getPc(pcName);
+            if (pc == null)
+                return new ResponseEntity<>(new JSONObject(Map.of("result", "pc not found!")), HttpStatus.OK);
+            else {
+                user.removePc(pcName);
+                user.save();
+                return new ResponseEntity<>(new JSONObject(Map.of("result", "pc removed successfully!")), HttpStatus.OK);
+            }
+        }
+    }
 }
 

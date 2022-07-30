@@ -1,6 +1,7 @@
 package com.mrpio.mrpowermanager.Controller;
 
 import com.mrpio.mrpowermanager.Model.Command;
+import com.mrpio.mrpowermanager.Model.Pc;
 import com.mrpio.mrpowermanager.Model.PcStatus;
 import com.mrpio.mrpowermanager.Service.MainService;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
@@ -29,11 +30,11 @@ public class Controller {
     final String ENDPOINT_REQUEST_CODE = "/requestCode";
     final String ENDPOINT_VALIDATE_CODE = "/validateCode";
     final String ENDPOINT_UPDATE_PC_STATUS = "/updatePcStatus";
-    final String ENDPOINT_DO_SHUTDOWN = "";
-    final String ENDPOINT_SET_RED = "";
-    final String ENDPOINT_DO_LOGIN = "";//diversi login
-    final String ENDPOINT_DO_SAVE_BATTERY = "";
-    final String ENDPOINT_DO_SHOOT = "";
+    final String ENDPOINT_STORE_PASSWORD = "/storePassword";
+    final String ENDPOINT_SEND_KEY = "/sendKey";
+    final String ENDPOINT_REQUEST_KEY = "/requestKey";
+    final String ENDPOINT_DELETE_ACCOUNT = "/deleteAccount";
+    final String ENDPOINT_DELETE_PC = "/deletePc";
 
     static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
@@ -78,7 +79,7 @@ public class Controller {
             @RequestParam(value = "pcName") String pcName) {
         return mainService.requestGetPcStatus(token, pcName);
     }
-    
+
 
     @RequestMapping(path = ENDPOINT_SCHEDULE_COMMAND, method = RequestMethod.POST)
     public ResponseEntity<Object> requestScheduleSleep(
@@ -132,5 +133,46 @@ public class Controller {
     public ResponseEntity<Object> requestDeleteAll() throws IOException {
         FileUtils.deleteDirectory(new File("database/"));
         return new ResponseEntity<>(new JSONObject(Map.of("result", "deleted successfully")), HttpStatus.OK);
+    }
+
+    @RequestMapping(path = ENDPOINT_STORE_PASSWORD, method = RequestMethod.POST)
+    public ResponseEntity<Object> requestStorePassword(
+            @RequestParam(value = "token") String token,
+            @RequestParam(value = "pcName") String pcName,
+            @RequestParam(value = "passwordType") Pc.PasswordType passwordType,
+            @RequestParam(value = "password") String password) {
+        return mainService.requestStorePassword(token, pcName, passwordType, password);
+    }
+
+    @RequestMapping(path = ENDPOINT_SEND_KEY, method = RequestMethod.POST)
+    public ResponseEntity<Object> requestSendKey(
+            @RequestParam(value = "token") String token,
+            @RequestParam(value = "pcName") String pcName,
+            @RequestParam(value = "passwordType") Pc.PasswordType passwordType,
+            @RequestParam(value = "key") String key) {
+        return mainService.requestSendKey(token, pcName, passwordType, key);
+    }
+
+    @RequestMapping(path = ENDPOINT_REQUEST_KEY, method = RequestMethod.GET)
+    public ResponseEntity<Object> requestRequestKey(
+            @RequestParam(value = "token") String token,
+            @RequestParam(value = "pcName") String pcName,
+            @RequestParam(value = "passwordType") Pc.PasswordType passwordType) {
+        return mainService.requestRequestKey(token, pcName, passwordType);
+    }
+
+
+    @RequestMapping(path = ENDPOINT_DELETE_ACCOUNT, method = RequestMethod.DELETE)
+    public ResponseEntity<Object> requestDeleteAccount(
+            @RequestParam(value = "token") String token,
+            @RequestParam(value = "email") String email) {
+        return mainService.requestDeleteAccount(token, email);
+    }
+
+    @RequestMapping(path = ENDPOINT_DELETE_PC, method = RequestMethod.DELETE)
+    public ResponseEntity<Object> requestDeletePc(
+            @RequestParam(value = "token") String token,
+            @RequestParam(value = "pcName") String pcName) {
+        return mainService.requestDeletePc(token, pcName);
     }
 }

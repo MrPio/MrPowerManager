@@ -8,8 +8,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class PcStatus implements Serializable {
-    boolean wifi, bluetooth, batteryPlugged, airplane, mute, redLight, saveBattery, hotspot;
-    int sound, brightness, batteryPerc, batteryMinutes, cpuLevel, ramLevel, redLightLevel;
+    boolean wifi, bluetooth, batteryPlugged, airplane, mute, redLight, saveBattery, hotspot,isLocked;
+    int sound, brightness, batteryPerc, batteryMinutes, cpuLevel, ramLevel, redLightLevel,storageLevel;
 
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     LocalDateTime updated;
@@ -27,11 +27,13 @@ public class PcStatus implements Serializable {
                     @JsonProperty("batteryMinutes") int batteryMinutes,
                     @JsonProperty("cpuLevel") int cpuLevel,
                     @JsonProperty("ramLevel") int ramLevel,
+                    @JsonProperty("storageLevel") int storageLevel,
                     @JsonProperty("airplane") boolean airplane,
                     @JsonProperty("mute") boolean mute,
                     @JsonProperty("redLight") boolean redLight,
                     @JsonProperty("saveBattery") boolean saveBattery,
                     @JsonProperty("hotspot") boolean hotspot,
+                    @JsonProperty("isLocked") boolean isLocked,
                     @JsonProperty("redLightLevel") int redLightLevel) {
         this.wifi = wifi;
         this.bluetooth = bluetooth;
@@ -48,6 +50,8 @@ public class PcStatus implements Serializable {
         this.saveBattery = saveBattery;
         this.hotspot = hotspot;
         this.redLightLevel = redLightLevel;
+        this.storageLevel=storageLevel;
+        this.isLocked=isLocked;
         updated = LocalDateTime.now();
     }
 

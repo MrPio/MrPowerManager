@@ -20,6 +20,7 @@ public class Command implements Serializable {
         HIBERNATE,
         SHUTDOWN,
         LOCK,
+        UNLOCK,
         SAVE_BATTERY_ON,
         SAVE_BATTERY_OFF,
 
