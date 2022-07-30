@@ -55,6 +55,14 @@ public class PcStatus implements Serializable {
         updated = LocalDateTime.now();
     }
 
+    public boolean isLocked() {
+        return isLocked;
+    }
+
+    public int getStorageLevel() {
+        return storageLevel;
+    }
+
     public boolean isAirplane() {
         return airplane;
     }
