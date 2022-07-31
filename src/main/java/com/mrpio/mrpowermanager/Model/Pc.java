@@ -66,6 +66,7 @@ public class Pc implements Serializable {
     public ArrayList<Command> listAvailableCommands() {
         var now = LocalDateTime.now().minusMinutes(10);
         var commands = new ArrayList<Command>();
+        var toRemove=new ArrayList<Command>();
         for (var c : commandList) {
             if (!c.isDone() && now.isBefore(c.getCommandScheduledDate())) {
                 if (c.getCommandReceivedDate() == null)
@@ -73,8 +74,9 @@ public class Pc implements Serializable {
                 commands.add(c);
             }
             else if(c.isDone()||MINUTES.between(now,c.getCommandScheduledDate())<-15)
-                commandList.remove(c);
+                toRemove.add(c);
         }
+        commandList.removeAll(toRemove);
         return commands;
     }
 
