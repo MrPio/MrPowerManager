@@ -1,6 +1,5 @@
 package com.mrpio.mrpowermanager.Model;
 
-import com.dropbox.core.DbxException;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.mrpio.mrpowermanager.Controller.Controller;
 import com.mrpio.mrpowermanager.Service.DropboxApi;
@@ -8,16 +7,10 @@ import com.mrpio.mrpowermanager.Service.Serialization;
 import org.json.simple.JSONObject;
 import org.springframework.scheduling.annotation.Async;
 
-import java.io.File;
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
@@ -166,7 +159,7 @@ public class User implements Serializable {
                     DropboxApi.deleteFile("/database/clients/" + token + ".user");
                     isClientOnline=false;
                 },
-                10, TimeUnit.SECONDS);
+                30, TimeUnit.SECONDS);
 
     }
 }

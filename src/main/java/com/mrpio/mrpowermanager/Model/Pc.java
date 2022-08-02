@@ -17,8 +17,8 @@ public class Pc implements Serializable {
     private final HashMap<String, String> passwords;
     private final HashMap<String, String> keys;
     private int maxWattage;
-    private int batteryStopCharging;
     private final ArrayList<WattageEntry> wattageEntries;
+    private int batteryCapacityMw;
 
     public Pc(String name) {
         this.name = name;
@@ -27,7 +27,7 @@ public class Pc implements Serializable {
         passwords = new HashMap<>();
         keys = new HashMap<>();
         maxWattage = 0;
-        batteryStopCharging = 100;
+        batteryCapacityMw=0;
         wattageEntries = new ArrayList<>();
     }
 
@@ -59,12 +59,13 @@ public class Pc implements Serializable {
         this.maxWattage = maxWattage;
     }
 
-    public int getBatteryStopCharging() {
-        return batteryStopCharging;
+
+    public int getBatteryCapacityMw() {
+        return batteryCapacityMw;
     }
 
-    public void setBatteryStopCharging(int batteryStopCharging) {
-        this.batteryStopCharging = batteryStopCharging;
+    public void setBatteryCapacityMw(int batteryCapacityMw) {
+        this.batteryCapacityMw = batteryCapacityMw;
     }
 
     public String addCommand(Command command) {
@@ -114,7 +115,8 @@ public class Pc implements Serializable {
 
     public void updatePcStatus(PcStatus pcStatus) {
         wattageEntries.add(new WattageEntry(pcStatus.getUpdated(), pcStatus.isBatteryPlugged(),
-                pcStatus.getCpuLevel(), pcStatus.getGpuLevel(), pcStatus.getBatteryPerc()));
+                pcStatus.getCpuLevel(), pcStatus.getGpuLevel(), pcStatus.getBatteryPerc(),
+                pcStatus.getBatteryChargeRate(), pcStatus.getBatteryDischargeRate()));
         this.pcStatus = pcStatus;
     }
 
@@ -156,7 +158,7 @@ public class Pc implements Serializable {
             if (watt.getDateTime().isBefore(end) && watt.getDateTime().isAfter(start)) {
                 var millisBetween = Math.abs(MILLIS.between(watt.getDateTime(), lastWatt.getDateTime()));
                 if (millisBetween < 120 * 1000) {
-                    weightedSum += millisBetween * watt.calculateWattage(maxWattage,batteryStopCharging);
+                    weightedSum += millisBetween * watt.calculateWattage(maxWattage);
                     weight += millisBetween;
                 }
             }
@@ -176,7 +178,7 @@ public class Pc implements Serializable {
             if (watt.getDateTime().isBefore(end) && watt.getDateTime().isAfter(start)) {
                 var millisBetween = Math.abs(MILLIS.between(watt.getDateTime(), lastWatt.getDateTime()));
                 if (millisBetween < 120 * 1000)
-                    weightedSum += millisBetween * watt.calculateWattage(maxWattage,batteryStopCharging);
+                    weightedSum += millisBetween * watt.calculateWattage(maxWattage);
                 else if (alsoEstimateEmptyZones)
                     weightedSum += millisBetween * calculateWattageMean(lastWatt.getDateTime().minusMinutes(10), watt.getDateTime().plusMinutes(10));
             }

@@ -38,8 +38,8 @@ public class Controller {
     final String ENDPOINT_REQUEST_KEY = "/requestKey";
     final String ENDPOINT_DELETE_ACCOUNT = "/deleteAccount";
     final String ENDPOINT_DELETE_PC = "/deletePc";
-    final String ENDPOINT_ADD_PC_MAX_WATTAGE = "/addPcMaxWattage";
-    final String ENDPOINT_ADD_PC_BATTERY_STOP_CHARGING = "/addPcBatteryStopCharging";
+    final String ENDPOINT_ADD_PC_MAX_WATTAGE = "/addPcMaxWattage";//<--- given by client
+    final String ENDPOINT_ADD_PC_BATTERY_CAPACITY = "/addPcBatteryCapacity";//<--- given by server
     final String ENDPOINT_CALCULATE_WATTAGE_MEAN = "/calculateWattageMean";
     final String ENDPOINT_CALCULATE_WATT_HOUR = "/calculateWattHour";
 
@@ -213,12 +213,12 @@ public class Controller {
         return mainService.requestAddPcMaxWattage(token, pcName,value);
     }
 
-    @RequestMapping(path = ENDPOINT_ADD_PC_BATTERY_STOP_CHARGING, method = RequestMethod.POST)
-    public ResponseEntity<Object> requestAddPcBatteryFull(
+    @RequestMapping(path = ENDPOINT_ADD_PC_BATTERY_CAPACITY, method = RequestMethod.POST)
+    public ResponseEntity<Object> requestAddPcBatteryCapacity(
             @RequestParam(value = "token") String token,
             @RequestParam(value = "pcName") String pcName,
             @RequestParam(value = "value") int value) {
-        return mainService.requestAddPcBatteryFull(token, pcName,value);
+        return mainService.requestAddPcBatteryCapacity(token, pcName,value);
     }
 
     @RequestMapping(path = ENDPOINT_CALCULATE_WATTAGE_MEAN, method = RequestMethod.GET)

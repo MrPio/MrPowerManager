@@ -9,7 +9,8 @@ import java.time.format.DateTimeFormatter;
 
 public class PcStatus implements Serializable {
     private boolean wifi, bluetooth, batteryPlugged, airplane, mute, redLight, saveBattery, hotspot,isLocked;
-    private int sound, brightness, batteryPerc, batteryMinutes, cpuLevel, ramLevel, redLightLevel,storageLevel,gpuLevel,gpuTemp;
+    private int sound, brightness, batteryPerc, batteryMinutes, cpuLevel, ramLevel, redLightLevel,
+            storageLevel,gpuLevel,gpuTemp,batteryChargeRate,batteryDischargeRate;
 
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     LocalDateTime updated;
@@ -25,6 +26,8 @@ public class PcStatus implements Serializable {
                     @JsonProperty("brightness") int brightness,
                     @JsonProperty("batteryPerc") int batteryPerc,
                     @JsonProperty("batteryMinutes") int batteryMinutes,
+                    @JsonProperty("batteryChargeRate") int batteryChargeRate,
+                    @JsonProperty("batteryDischargeRate") int batteryDischargeRate,
                     @JsonProperty("cpuLevel") int cpuLevel,
                     @JsonProperty("gpuLevel") int gpuLevel,
                     @JsonProperty("gpuTemp") int gpuTemp,
@@ -56,6 +59,8 @@ public class PcStatus implements Serializable {
         this.redLightLevel = redLightLevel;
         this.storageLevel=storageLevel;
         this.isLocked=isLocked;
+        this.batteryChargeRate=batteryChargeRate;
+        this.batteryDischargeRate=batteryDischargeRate;
         updated = LocalDateTime.now();
     }
 
@@ -137,5 +142,13 @@ public class PcStatus implements Serializable {
 
     public LocalDateTime getUpdated() {
         return updated;
+    }
+
+    public int getBatteryChargeRate() {
+        return batteryChargeRate;
+    }
+
+    public int getBatteryDischargeRate() {
+        return batteryDischargeRate;
     }
 }

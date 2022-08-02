@@ -13,25 +13,33 @@ public class WattageEntry {
     private final int cpuPercentage;
     private final int gpuPercentage;
     private final int batteryPercentage;
+    private final int batteryChargeRate;
+    private final int batteryDischargeRate;
 
     public WattageEntry(@JsonProperty("dateTime") String dateTime,
                         @JsonProperty("isPlugged") boolean isPlugged,
                         @JsonProperty("cpuPercentage") int cpuPercentage,
                         @JsonProperty("gpuPercentage") int gpuPercentage,
-                        @JsonProperty("batteryPercentage") int batteryPercentage) {
+                        @JsonProperty("batteryPercentage") int batteryPercentage,
+                        @JsonProperty("batteryChargeRate") int batteryChargeRate,
+                        @JsonProperty("batteryChargeRate") int batteryDischargeRate) {
         this.dateTime = Controller.stringFullToLocalDate(dateTime);
         this.isPlugged = isPlugged;
         this.cpuPercentage = cpuPercentage;
         this.gpuPercentage = gpuPercentage;
         this.batteryPercentage = batteryPercentage;
+        this.batteryChargeRate = batteryChargeRate;
+        this.batteryDischargeRate = batteryDischargeRate;
     }
 
-    public WattageEntry(LocalDateTime dateTime, boolean isPlugged, int cpuPercentage, int gpuPercentage, int batteryPercentage) {
+    public WattageEntry(LocalDateTime dateTime, boolean isPlugged, int cpuPercentage, int gpuPercentage, int batteryPercentage, int batteryChargeRate, int batteryDischargeRate) {
         this.dateTime = dateTime;
         this.isPlugged = isPlugged;
         this.cpuPercentage = cpuPercentage;
         this.gpuPercentage = gpuPercentage;
         this.batteryPercentage = batteryPercentage;
+        this.batteryChargeRate = batteryChargeRate;
+        this.batteryDischargeRate = batteryDischargeRate;
     }
 
     public LocalDateTime getDateTime() {
@@ -54,15 +62,18 @@ public class WattageEntry {
         return gpuPercentage;
     }
 
-    public int calculateWattage(int maxWattage, int batteryStopCharging) {
-        if(maxWattage>=500)
-            return (int)(maxWattage*0.4);
+    public int calculateWattage(int maxWattage) {
+        if(!isPlugged)
+            return (int) Math.round(batteryDischargeRate/1000d);
+
+        if (maxWattage >= 500)
+            return (int) (maxWattage * 0.4);
         var cpuClipped = Math.max(cpuPercentage, 3);
         var a = 0.039946d * maxWattage + 1.8654d;
         var c = 0.00063243d * maxWattage + 0.27954d;
         var b = maxWattage / 15.333d;
         var s = 0.002d * maxWattage;
-        var p = (isPlugged && batteryPercentage < (batteryStopCharging - 15)) ? maxWattage * 0.1d : 0;
+        var p = batteryChargeRate/1000d;
         var wattage = a * Math.pow(cpuClipped - 3, c) + b + gpuPercentage * s + p;
         return (int) Math.round(wattage);
     }

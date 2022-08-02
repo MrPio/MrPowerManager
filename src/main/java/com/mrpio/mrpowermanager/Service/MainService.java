@@ -251,7 +251,7 @@ public class MainService {
         return new ResponseEntity<>(new JSONObject(Map.of("result", "Max wattage set successfully!")), HttpStatus.OK);
     }
 
-    public ResponseEntity<Object> requestAddPcBatteryFull(String token, String pcName, int value) {
+    public ResponseEntity<Object> requestAddPcBatteryCapacity(String token, String pcName, int value) {
 
         var result = validateUserAndPc(token, pcName);
         if (result.getClass() == ResponseEntity.class)
@@ -259,9 +259,9 @@ public class MainService {
         var user = (User) ((Object[]) result)[0];
         var pc = (Pc) ((Object[]) result)[1];
 
-        if (value > 100 || value < 20)
-            return new ResponseEntity<>(new JSONObject(Map.of("result", "The value cannot be lower than 20 or higher than 100!")), HttpStatus.OK);
-        pc.setBatteryStopCharging(value);
+        if (value > 1000000 || value < 100)
+            return new ResponseEntity<>(new JSONObject(Map.of("result", "the value is invalid!")), HttpStatus.OK);
+        pc.setBatteryCapacityMw(value);
         user.scheduleSave();
         return new ResponseEntity<>(new JSONObject(Map.of("result", "Battery stop charging set successfully!")), HttpStatus.OK);
     }
