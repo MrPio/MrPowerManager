@@ -8,8 +8,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class PcStatus implements Serializable {
-    boolean wifi, bluetooth, batteryPlugged, airplane, mute, redLight, saveBattery, hotspot,isLocked;
-    int sound, brightness, batteryPerc, batteryMinutes, cpuLevel, ramLevel, redLightLevel,storageLevel;
+    private boolean wifi, bluetooth, batteryPlugged, airplane, mute, redLight, saveBattery, hotspot,isLocked;
+    private int sound, brightness, batteryPerc, batteryMinutes, cpuLevel, ramLevel, redLightLevel,storageLevel,gpuLevel,gpuTemp;
 
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     LocalDateTime updated;
@@ -26,6 +26,8 @@ public class PcStatus implements Serializable {
                     @JsonProperty("batteryPerc") int batteryPerc,
                     @JsonProperty("batteryMinutes") int batteryMinutes,
                     @JsonProperty("cpuLevel") int cpuLevel,
+                    @JsonProperty("gpuLevel") int gpuLevel,
+                    @JsonProperty("gpuTemp") int gpuTemp,
                     @JsonProperty("ramLevel") int ramLevel,
                     @JsonProperty("storageLevel") int storageLevel,
                     @JsonProperty("airplane") boolean airplane,
@@ -44,6 +46,8 @@ public class PcStatus implements Serializable {
         this.batteryMinutes = batteryMinutes;
         this.cpuLevel = cpuLevel;
         this.ramLevel = ramLevel;
+        this.gpuLevel=gpuLevel;
+        this.gpuTemp=gpuTemp;
         this.airplane = airplane;
         this.mute = mute;
         this.redLight = redLight;
@@ -121,6 +125,14 @@ public class PcStatus implements Serializable {
 
     public int getRamLevel() {
         return ramLevel;
+    }
+
+    public int getGpuLevel() {
+        return gpuLevel;
+    }
+
+    public int getGpuTemp() {
+        return gpuTemp;
     }
 
     public LocalDateTime getUpdated() {

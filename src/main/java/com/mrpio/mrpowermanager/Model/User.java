@@ -2,9 +2,11 @@ package com.mrpio.mrpowermanager.Model;
 
 import com.dropbox.core.DbxException;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.mrpio.mrpowermanager.Controller.Controller;
 import com.mrpio.mrpowermanager.Service.DropboxApi;
 import com.mrpio.mrpowermanager.Service.Serialization;
 import org.json.simple.JSONObject;
+import org.springframework.scheduling.annotation.Async;
 
 import java.io.File;
 import java.io.Serializable;
@@ -14,14 +16,23 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import static java.time.temporal.ChronoUnit.SECONDS;
 
 public class User implements Serializable {
     public final static String DIR = "database/";
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime signUpDate;
-    private String token, email;
-    private ArrayList<Pc> pcList;
+    private final LocalDateTime signUpDate;
+    private final String token;
+    private final String email;
+    private final ArrayList<Pc> pcList;
+    private transient boolean scheduled;
+    private transient boolean isClientOnline;
+    private transient LocalDateTime lastClientOnline;
 
 
     public User(LocalDateTime signUp, String token, String email) {
@@ -39,12 +50,32 @@ public class User implements Serializable {
         return token;
     }
 
-    public void save() {
+    @Async
+    public void scheduleSave(boolean... force) {
+        var start = System.nanoTime();
+
+        if (force.length > 0 && force[0]) {
+            new Thread(this::save).start();
+            return;
+        }
+
+        if (!scheduled) {
+            System.out.println("Saving...");
+            Executors.newScheduledThreadPool(1).schedule(this::save, 300, TimeUnit.SECONDS);
+            scheduled = true;
+        }
+        System.out.println("took ---> " + (System.nanoTime() - start) / 1000000d);
+    }
+
+    private void save() {
+
         Serialization s = new Serialization(DIR, token + ".dat");
         s.saveObject(this);
-        new Thread(() -> DropboxApi.uploadFile(
+        DropboxApi.uploadFile(
                 s.getFullPath(),
-                "/database/" + s.getFileName())).start();
+                "/database/" + s.getFileName());
+        System.out.println("Saved");
+        scheduled = false;
     }
 
     public String getEmail() {
@@ -71,9 +102,20 @@ public class User implements Serializable {
     }
 
     public static User load(String token) {
+        //300~350 times faster with this
+        for (var user : Controller.usersCache)
+            if (user.getToken().equals(token))
+                return user;
+
+        if (Controller.usersCache.size() > 10000)
+            Controller.usersCache = Controller.usersCache.subList(2000, Controller.usersCache.size());
+
         var serialization = new Serialization(DIR, token + ".dat");
-        if (serialization.existFile())
-            return (User) serialization.loadObject();
+        if (serialization.existFile()) {
+            var user = (User) serialization.loadObject();
+            Controller.usersCache.add(user);
+            return user;
+        }
 
 
         String path = "/database";
@@ -81,7 +123,9 @@ public class User implements Serializable {
             DropboxApi.downloadFile(
                     path + "/" + token + ".dat",
                     DIR + token + ".dat");
-            return (User) serialization.loadObject();
+            var user = (User) serialization.loadObject();
+            Controller.usersCache.add(user);
+            return user;
         }
 
         return null;
@@ -95,5 +139,34 @@ public class User implements Serializable {
 
     public boolean removePc(String pcName) {
         return pcList.removeIf(pc -> pc.getName().equals(pcName));
+    }
+
+    public void clientGoOnline() {
+        lastClientOnline=LocalDateTime.now();
+        if (!isClientOnline) {
+            var s = new Serialization(DIR + "clients", token + ".user");
+            s.saveObject("online");
+            new Thread(() -> DropboxApi.uploadFile(s.getFullPath(),
+                    "/database/clients/" + s.getFileName())).start();
+            isClientOnline=true;
+            scheduleGoOffline();
+        }
+    }
+
+    @Async
+    void scheduleGoOffline(){
+        Executors.newScheduledThreadPool(1).schedule(
+                ()->{
+                    if(SECONDS.between(lastClientOnline,LocalDateTime.now())<8){
+                        System.out.println("rimando...");
+                        scheduleGoOffline();
+                        return;
+                    }
+                    System.out.println("elimino...");
+                    DropboxApi.deleteFile("/database/clients/" + token + ".user");
+                    isClientOnline=false;
+                },
+                10, TimeUnit.SECONDS);
+
     }
 }

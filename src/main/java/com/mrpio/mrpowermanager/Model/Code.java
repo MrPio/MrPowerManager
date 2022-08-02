@@ -75,7 +75,7 @@ public class Code implements Serializable {
                     var count = 0;
                     if (!user.addPc(c.getPcName()))
                         while (!user.addPc(c.getPcName() + ++count)) ;
-                    user.save();
+                    user.scheduleSave();
                     codes.remove(c);
                     serialization.saveObject(codes);
                     var pcName=count==0?c.getPcName():c.getPcName()+count;

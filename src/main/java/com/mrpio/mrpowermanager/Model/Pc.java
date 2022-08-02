@@ -4,35 +4,38 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import static java.time.temporal.ChronoUnit.*;
 
 public class Pc implements Serializable {
-
     public enum State {ONLINE, OFFLINE, PAUSED}
-    public enum PasswordType{
-        WINDOWS
-    }
 
-    private String name;
-    private ArrayList<Command> commandList;
+    private final String name;
+    private final ArrayList<Command> commandList;
     private PcStatus pcStatus;
-    private HashMap<PasswordType,String> passwords;
-    private HashMap<PasswordType,String> keys;
+    private final HashMap<String, String> passwords;
+    private final HashMap<String, String> keys;
+    private int maxWattage;
+    private int batteryStopCharging;
+    private final ArrayList<WattageEntry> wattageEntries;
 
     public Pc(String name) {
         this.name = name;
         commandList = new ArrayList<>();
         pcStatus = new PcStatus();
-        passwords=new HashMap<>();
-        keys=new HashMap<>();
+        passwords = new HashMap<>();
+        keys = new HashMap<>();
+        maxWattage = 0;
+        batteryStopCharging = 100;
+        wattageEntries = new ArrayList<>();
     }
 
     public String getName() {
         return name;
     }
 
-    public HashMap<PasswordType, String> getPasswords() {
+    public HashMap<String, String> getPasswords() {
         return passwords;
     }
 
@@ -46,6 +49,22 @@ public class Pc implements Serializable {
 
     public ArrayList<Command> getCommandList() {
         return commandList;
+    }
+
+    public int getMaxWattage() {
+        return maxWattage;
+    }
+
+    public void setMaxWattage(int maxWattage) {
+        this.maxWattage = maxWattage;
+    }
+
+    public int getBatteryStopCharging() {
+        return batteryStopCharging;
+    }
+
+    public void setBatteryStopCharging(int batteryStopCharging) {
+        this.batteryStopCharging = batteryStopCharging;
     }
 
     public String addCommand(Command command) {
@@ -66,14 +85,13 @@ public class Pc implements Serializable {
     public ArrayList<Command> listAvailableCommands() {
         var now = LocalDateTime.now().minusMinutes(10);
         var commands = new ArrayList<Command>();
-        var toRemove=new ArrayList<Command>();
+        var toRemove = new ArrayList<Command>();
         for (var c : commandList) {
             if (!c.isDone() && now.isBefore(c.getCommandScheduledDate())) {
                 if (c.getCommandReceivedDate() == null)
                     c.setCommandReceivedDate(now);
                 commands.add(c);
-            }
-            else if(c.isDone()||MINUTES.between(now,c.getCommandScheduledDate())<-15)
+            } else if (c.isDone() || MINUTES.between(now, c.getCommandScheduledDate()) < -15)
                 toRemove.add(c);
         }
         commandList.removeAll(toRemove);
@@ -95,18 +113,80 @@ public class Pc implements Serializable {
     }
 
     public void updatePcStatus(PcStatus pcStatus) {
+        wattageEntries.add(new WattageEntry(pcStatus.getUpdated(), pcStatus.isBatteryPlugged(),
+                pcStatus.getCpuLevel(), pcStatus.getGpuLevel(), pcStatus.getBatteryPerc()));
         this.pcStatus = pcStatus;
     }
 
-    public void storePassword(PasswordType passwordType,String password){
-        this.passwords.put(passwordType,password);
+    public void uploadWattageEntries(WattageEntry[] wattageEntries) {
+        this.wattageEntries.addAll(List.of(wattageEntries));
     }
 
-    public void storeKey(PasswordType passwordType,String key){
-        keys.put(passwordType,key);
-    }
-    public String requestKey(PasswordType passwordType){
-        return keys.remove(passwordType);
+    public boolean storePassword(String title, String password) {
+        var update= passwords.containsKey(title);
+        this.passwords.put(title, password);
+        return update;
     }
 
+    public String deletePassword(String title) {
+        return passwords.remove(title);
+    }
+
+
+    public boolean storeKey(String title, String key) {
+        var update= keys.containsKey(title);
+        keys.put(title, key);
+        return update;
+    }
+
+    public String requestKey(String title) {
+        return keys.remove(title);
+    }
+
+    public double calculateWattageMean(LocalDateTime start, LocalDateTime end) {
+        //It must be sorted by data
+        double weightedSum = 0;
+        double weight = 0;
+        WattageEntry lastWatt = null;
+        for (var watt : wattageEntries) {
+            if (lastWatt == null) {
+                lastWatt = watt;
+                continue;
+            }
+            if (watt.getDateTime().isBefore(end) && watt.getDateTime().isAfter(start)) {
+                var millisBetween = Math.abs(MILLIS.between(watt.getDateTime(), lastWatt.getDateTime()));
+                if (millisBetween < 120 * 1000) {
+                    weightedSum += millisBetween * watt.calculateWattage(maxWattage,batteryStopCharging);
+                    weight += millisBetween;
+                }
+            }
+            lastWatt = watt;
+        }
+        return weightedSum / weight;
+    }
+
+    public double calculateWattHour(LocalDateTime start, LocalDateTime end, boolean alsoEstimateEmptyZones) {
+        double weightedSum = 0;
+        WattageEntry lastWatt = null;
+        for (var watt : wattageEntries) {
+            if (lastWatt == null) {
+                lastWatt = watt;
+                continue;
+            }
+            if (watt.getDateTime().isBefore(end) && watt.getDateTime().isAfter(start)) {
+                var millisBetween = Math.abs(MILLIS.between(watt.getDateTime(), lastWatt.getDateTime()));
+                if (millisBetween < 120 * 1000)
+                    weightedSum += millisBetween * watt.calculateWattage(maxWattage,batteryStopCharging);
+                else if (alsoEstimateEmptyZones)
+                    weightedSum += millisBetween * calculateWattageMean(lastWatt.getDateTime().minusMinutes(10), watt.getDateTime().plusMinutes(10));
+            }
+            lastWatt = watt;
+        }
+        return weightedSum / 3600 / 1000;
+    }
+
+
+    public ArrayList<WattageEntry> getWattageEntries() {
+        return wattageEntries;
+    }
 }

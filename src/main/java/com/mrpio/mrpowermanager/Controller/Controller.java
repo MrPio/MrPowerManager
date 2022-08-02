@@ -1,28 +1,29 @@
 package com.mrpio.mrpowermanager.Controller;
 
-import com.mrpio.mrpowermanager.Model.Command;
-import com.mrpio.mrpowermanager.Model.Pc;
-import com.mrpio.mrpowermanager.Model.PcStatus;
+import com.mrpio.mrpowermanager.Model.*;
 import com.mrpio.mrpowermanager.Service.MainService;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
+import org.json.simple.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-
-import org.json.simple.JSONObject;
 
 @RestController
 public class Controller {
+    public static List<User> usersCache=new ArrayList<>();
+
+
     final String ENDPOINT_SIGNUP = "/signup";
     final String ENDPOINT_LOGIN = "/login";
-    final String ENDPOINT_ADD_PC = "/addPc";//<----------------------OBSOLETE
+    final String ENDPOINT_ADD_PC = "/addPc";//<----------------------DEPRECATED
     final String ENDPOINT_GET_PC_STATUS = "/getPcStatus";
     final String ENDPOINT_SCHEDULE_COMMAND = "/scheduleCommand";
     final String ENDPOINT_AVAILABLE_COMMANDS = "/availableCommands";
@@ -30,16 +31,27 @@ public class Controller {
     final String ENDPOINT_REQUEST_CODE = "/requestCode";
     final String ENDPOINT_VALIDATE_CODE = "/validateCode";
     final String ENDPOINT_UPDATE_PC_STATUS = "/updatePcStatus";
+    final String ENDPOINT_UPLOAD_WATTAGE_ENTRIES = "/uploadWattageEntries";
     final String ENDPOINT_STORE_PASSWORD = "/storePassword";
+    final String ENDPOINT_DELETE_PASSWORD = "/deletePassword";
     final String ENDPOINT_SEND_KEY = "/sendKey";
     final String ENDPOINT_REQUEST_KEY = "/requestKey";
     final String ENDPOINT_DELETE_ACCOUNT = "/deleteAccount";
     final String ENDPOINT_DELETE_PC = "/deletePc";
+    final String ENDPOINT_ADD_PC_MAX_WATTAGE = "/addPcMaxWattage";
+    final String ENDPOINT_ADD_PC_BATTERY_STOP_CHARGING = "/addPcBatteryStopCharging";
+    final String ENDPOINT_CALCULATE_WATTAGE_MEAN = "/calculateWattageMean";
+    final String ENDPOINT_CALCULATE_WATT_HOUR = "/calculateWattHour";
+
 
     static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    static DateTimeFormatter formatterFull=DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public static LocalDateTime stringToLocalDate(String date) {
         return LocalDateTime.parse(date, formatter);
+    }
+    public static LocalDateTime stringFullToLocalDate(String date) {
+        return LocalDateTime.parse(date, formatterFull);
     }
 
     MainService mainService = new MainService();
@@ -47,7 +59,7 @@ public class Controller {
     @RequestMapping(path = "/")
     public ResponseEntity<Object> Welcome() {
         return new ResponseEntity<>(
-                new JSONObject(Map.of("welcome", "Welcome this is MrPowerManager, RESTful API, restricted for only authorized user" +
+                new JSONObject(Map.of("welcome", "Welcome this is MrPowerManager, REST-full API, restricted for only authorized user" +
                         "you can find the repository here: " +
                         "https://github.com/MrPio/MrPowerManager")),
                 HttpStatus.OK);
@@ -62,8 +74,9 @@ public class Controller {
 
     @RequestMapping(path = ENDPOINT_LOGIN, method = RequestMethod.GET)
     public ResponseEntity<Object> requestLogin(
-            @RequestParam(value = "token") String token) {
-        return mainService.requestLogin(token);
+            @RequestParam(value = "token") String token,
+    @RequestParam(value="imTheClient",defaultValue = "false")boolean imTheClient) {
+        return mainService.requestLogin(token,imTheClient);
     }
 
     @RequestMapping(path = ENDPOINT_ADD_PC, method = RequestMethod.POST)
@@ -129,6 +142,14 @@ public class Controller {
         return mainService.requestUpdatePcStatus(token, pcName, pcStatus);
     }
 
+    @RequestMapping(path = ENDPOINT_UPLOAD_WATTAGE_ENTRIES, method = RequestMethod.POST)
+    public ResponseEntity<Object> requestUploadWattageEntries(
+            @RequestParam(value = "token") String token,
+            @RequestParam(value = "pcName") String pcName,
+            @RequestBody WattageEntry[] wattageEntries) {
+        return mainService.requestUploadWattageEntries(token, pcName, wattageEntries);
+    }
+
     @RequestMapping(path = "/deleteAll", method = RequestMethod.DELETE)
     public ResponseEntity<Object> requestDeleteAll() throws IOException {
         FileUtils.deleteDirectory(new File("database/"));
@@ -139,26 +160,34 @@ public class Controller {
     public ResponseEntity<Object> requestStorePassword(
             @RequestParam(value = "token") String token,
             @RequestParam(value = "pcName") String pcName,
-            @RequestParam(value = "passwordType") Pc.PasswordType passwordType,
+            @RequestParam(value = "title") String title,
             @RequestParam(value = "password") String password) {
-        return mainService.requestStorePassword(token, pcName, passwordType, password);
+        return mainService.requestStorePassword(token, pcName, title, password);
+    }
+
+    @RequestMapping(path = ENDPOINT_DELETE_PASSWORD, method = RequestMethod.DELETE)
+    public ResponseEntity<Object> requestDeletePassword(
+            @RequestParam(value = "token") String token,
+            @RequestParam(value = "pcName") String pcName,
+            @RequestParam(value = "title") String title) {
+        return mainService.requestDeletePassword(token, pcName, title);
     }
 
     @RequestMapping(path = ENDPOINT_SEND_KEY, method = RequestMethod.POST)
     public ResponseEntity<Object> requestSendKey(
             @RequestParam(value = "token") String token,
             @RequestParam(value = "pcName") String pcName,
-            @RequestParam(value = "passwordType") Pc.PasswordType passwordType,
+            @RequestParam(value = "title") String title,
             @RequestParam(value = "key") String key) {
-        return mainService.requestSendKey(token, pcName, passwordType, key);
+        return mainService.requestSendKey(token, pcName, title, key);
     }
 
     @RequestMapping(path = ENDPOINT_REQUEST_KEY, method = RequestMethod.GET)
     public ResponseEntity<Object> requestRequestKey(
             @RequestParam(value = "token") String token,
             @RequestParam(value = "pcName") String pcName,
-            @RequestParam(value = "passwordType") Pc.PasswordType passwordType) {
-        return mainService.requestRequestKey(token, pcName, passwordType);
+            @RequestParam(value = "title") String title) {
+        return mainService.requestRequestKey(token, pcName, title);
     }
 
 
@@ -174,5 +203,40 @@ public class Controller {
             @RequestParam(value = "token") String token,
             @RequestParam(value = "pcName") String pcName) {
         return mainService.requestDeletePc(token, pcName);
+    }
+
+    @RequestMapping(path = ENDPOINT_ADD_PC_MAX_WATTAGE, method = RequestMethod.POST)
+    public ResponseEntity<Object> requestAddPcMaxWattage(
+            @RequestParam(value = "token") String token,
+            @RequestParam(value = "pcName") String pcName,
+            @RequestParam(value = "value") int value) {
+        return mainService.requestAddPcMaxWattage(token, pcName,value);
+    }
+
+    @RequestMapping(path = ENDPOINT_ADD_PC_BATTERY_STOP_CHARGING, method = RequestMethod.POST)
+    public ResponseEntity<Object> requestAddPcBatteryFull(
+            @RequestParam(value = "token") String token,
+            @RequestParam(value = "pcName") String pcName,
+            @RequestParam(value = "value") int value) {
+        return mainService.requestAddPcBatteryFull(token, pcName,value);
+    }
+
+    @RequestMapping(path = ENDPOINT_CALCULATE_WATTAGE_MEAN, method = RequestMethod.GET)
+    public ResponseEntity<Object> requestCalculateWattageMean(
+            @RequestParam(value = "token") String token,
+            @RequestParam(value = "pcName") String pcName,
+            @RequestParam(value = "startDate") String startDate,
+            @RequestParam(value = "endDate") String endDate) {
+        return mainService.requestCalculateWattageMean(token, pcName,startDate,endDate);
+    }
+
+    @RequestMapping(path = ENDPOINT_CALCULATE_WATT_HOUR, method = RequestMethod.GET)
+    public ResponseEntity<Object> requestCalculateWattHour(
+            @RequestParam(value = "token") String token,
+            @RequestParam(value = "pcName") String pcName,
+            @RequestParam(value = "startDate") String startDate,
+            @RequestParam(value = "endDate") String endDate,
+            @RequestParam(value = "estimateEmpty", defaultValue = "false") boolean estimateEmpty) {
+        return mainService.requestCalculateWattHour(token, pcName,startDate,endDate,estimateEmpty);
     }
 }
