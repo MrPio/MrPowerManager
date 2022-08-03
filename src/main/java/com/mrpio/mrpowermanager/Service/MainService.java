@@ -28,19 +28,19 @@ public class MainService {
     }
 
     public ResponseEntity<Object> requestSignUp(String token, String email) {
-        var user=User.load(token);
-        if (user!=null)
+        var user = User.load(token);
+        if (user != null)
             return new ResponseEntity<>(new JSONObject(Map.of("result", "user already in database!")), HttpStatus.OK);
         (new User(LocalDateTime.now(), token, email)).scheduleSave(true);
         return new ResponseEntity<>(new JSONObject(Map.of("result", "user registered successfully!")), HttpStatus.OK);
     }
 
-    public ResponseEntity<Object> requestLogin(String token,boolean imTheClient) {
+    public ResponseEntity<Object> requestLogin(String token, boolean imTheClient) {
         var user = User.load(token);
         if (user != null) {
             var response = new JSONObject(Map.of("result", "user present in database!", "user", user.toJsonObject()));
             response.put("user", user.toJsonObject().values().toArray()[0]);
-            if(imTheClient)
+            if (imTheClient)
                 user.clientGoOnline();
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
@@ -119,9 +119,12 @@ public class MainService {
     }
 
     public ResponseEntity<Object> requestCode(String token, String pcName) {
-        var result = validateUserAndPc(token, pcName);
-        if (result.getClass() == ResponseEntity.class)
-            return (ResponseEntity<Object>) result;
+        var user = User.load(token);
+        if (user == null)
+            return new ResponseEntity<>(new JSONObject(Map.of("result", "unknown user!")), HttpStatus.OK);
+
+        if(user.getPc(pcName)!=null)
+            return new ResponseEntity<>(new JSONObject(Map.of("result", "this pc name is already in use!")), HttpStatus.OK);
 
         var code = Code.generateCode(token, pcName);
         return new ResponseEntity<>(new JSONObject(Map.of("result", "code generated successfully!", "code", code)), HttpStatus.OK);
@@ -208,8 +211,8 @@ public class MainService {
 
         var key = pc.requestKey(title);
         user.scheduleSave();
-        var map=key==null?Map.of("result","key not found!"):
-                Map.of("result","key requested successfully!","key",key);
+        var map = key == null ? Map.of("result", "key not found!") :
+                Map.of("result", "key requested successfully!", "key", key);
 
         return new ResponseEntity<>(new JSONObject(map), HttpStatus.OK);
     }
