@@ -4,9 +4,10 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mrpio.mrpowermanager.Controller.Controller;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public class WattageEntry {
+public class WattageEntry implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private final LocalDateTime dateTime;
     private final boolean isPlugged;
@@ -22,7 +23,7 @@ public class WattageEntry {
                         @JsonProperty("gpuPercentage") int gpuPercentage,
                         @JsonProperty("batteryPercentage") int batteryPercentage,
                         @JsonProperty("batteryChargeRate") int batteryChargeRate,
-                        @JsonProperty("batteryChargeRate") int batteryDischargeRate) {
+                        @JsonProperty("batteryDischargeRate") int batteryDischargeRate) {
         this.dateTime = Controller.stringFullToLocalDate(dateTime);
         this.isPlugged = isPlugged;
         this.cpuPercentage = cpuPercentage;

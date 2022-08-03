@@ -28,8 +28,8 @@ public class MainService {
     }
 
     public ResponseEntity<Object> requestSignUp(String token, String email) {
-        Serialization serialization = new Serialization(DIR, token + ".dat");
-        if (serialization.existFile())
+        var user=User.load(token);
+        if (user!=null)
             return new ResponseEntity<>(new JSONObject(Map.of("result", "user already in database!")), HttpStatus.OK);
         (new User(LocalDateTime.now(), token, email)).scheduleSave(true);
         return new ResponseEntity<>(new JSONObject(Map.of("result", "user registered successfully!")), HttpStatus.OK);
@@ -208,9 +208,10 @@ public class MainService {
 
         var key = pc.requestKey(title);
         user.scheduleSave();
+        var map=key==null?Map.of("result","key not found!"):
+                Map.of("result","key requested successfully!","key",key);
 
-        return new ResponseEntity<>(new JSONObject(Map.of("result",
-                key == null ? "key not found!" : "key requested successfully!")), HttpStatus.OK);
+        return new ResponseEntity<>(new JSONObject(map), HttpStatus.OK);
     }
 
     public ResponseEntity<Object> requestDeleteAccount(String token, String email) {
@@ -263,7 +264,7 @@ public class MainService {
             return new ResponseEntity<>(new JSONObject(Map.of("result", "the value is invalid!")), HttpStatus.OK);
         pc.setBatteryCapacityMw(value);
         user.scheduleSave();
-        return new ResponseEntity<>(new JSONObject(Map.of("result", "Battery stop charging set successfully!")), HttpStatus.OK);
+        return new ResponseEntity<>(new JSONObject(Map.of("result", "Battery capacity set successfully!")), HttpStatus.OK);
     }
 
     public ResponseEntity<Object> requestCalculateWattageMean(String token, String pcName, String startDate, String endDate) {
