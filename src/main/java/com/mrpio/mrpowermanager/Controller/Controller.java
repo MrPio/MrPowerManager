@@ -18,7 +18,7 @@ import java.util.Map;
 
 @RestController
 public class Controller {
-    public static List<User> usersCache=new ArrayList<>();
+    public static List<User> usersCache = new ArrayList<>();
 
 
     final String ENDPOINT_SIGNUP = "/signup";
@@ -42,14 +42,17 @@ public class Controller {
     final String ENDPOINT_ADD_PC_BATTERY_CAPACITY = "/addPcBatteryCapacity";//<--- given by server
     final String ENDPOINT_CALCULATE_WATTAGE_MEAN = "/calculateWattageMean";
     final String ENDPOINT_CALCULATE_WATT_HOUR = "/calculateWattHour";
+    final String ENDPOINT_REQUEST_TODAY_WATTAGE = "/requestTodayWattage";
+    final String ENDPOINT_GENERATE_RANDOM_WATTAGE_DATA = "/generateRandomWattageData";
 
 
     static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-    static DateTimeFormatter formatterFull=DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    static DateTimeFormatter formatterFull = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public static LocalDateTime stringToLocalDate(String date) {
         return LocalDateTime.parse(date, formatter);
     }
+
     public static LocalDateTime stringFullToLocalDate(String date) {
         return LocalDateTime.parse(date, formatterFull);
     }
@@ -75,8 +78,8 @@ public class Controller {
     @RequestMapping(path = ENDPOINT_LOGIN, method = RequestMethod.GET)
     public ResponseEntity<Object> requestLogin(
             @RequestParam(value = "token") String token,
-    @RequestParam(value="imTheClient",defaultValue = "false")boolean imTheClient) {
-        return mainService.requestLogin(token,imTheClient);
+            @RequestParam(value = "imTheClient", defaultValue = "false") boolean imTheClient) {
+        return mainService.requestLogin(token, imTheClient);
     }
 
     @RequestMapping(path = ENDPOINT_ADD_PC, method = RequestMethod.POST)
@@ -210,7 +213,7 @@ public class Controller {
             @RequestParam(value = "token") String token,
             @RequestParam(value = "pcName") String pcName,
             @RequestParam(value = "value") int value) {
-        return mainService.requestAddPcMaxWattage(token, pcName,value);
+        return mainService.requestAddPcMaxWattage(token, pcName, value);
     }
 
     @RequestMapping(path = ENDPOINT_ADD_PC_BATTERY_CAPACITY, method = RequestMethod.POST)
@@ -218,7 +221,7 @@ public class Controller {
             @RequestParam(value = "token") String token,
             @RequestParam(value = "pcName") String pcName,
             @RequestParam(value = "value") int value) {
-        return mainService.requestAddPcBatteryCapacity(token, pcName,value);
+        return mainService.requestAddPcBatteryCapacity(token, pcName, value);
     }
 
     @RequestMapping(path = ENDPOINT_CALCULATE_WATTAGE_MEAN, method = RequestMethod.GET)
@@ -227,7 +230,7 @@ public class Controller {
             @RequestParam(value = "pcName") String pcName,
             @RequestParam(value = "startDate") String startDate,
             @RequestParam(value = "endDate") String endDate) {
-        return mainService.requestCalculateWattageMean(token, pcName,startDate,endDate);
+        return mainService.requestCalculateWattageMean(token, pcName, startDate, endDate);
     }
 
     @RequestMapping(path = ENDPOINT_CALCULATE_WATT_HOUR, method = RequestMethod.GET)
@@ -237,6 +240,23 @@ public class Controller {
             @RequestParam(value = "startDate") String startDate,
             @RequestParam(value = "endDate") String endDate,
             @RequestParam(value = "estimateEmpty", defaultValue = "false") boolean estimateEmpty) {
-        return mainService.requestCalculateWattHour(token, pcName,startDate,endDate,estimateEmpty);
+        return mainService.requestCalculateWattHour(token, pcName, startDate, endDate, estimateEmpty);
+    }
+
+
+    @RequestMapping(path = ENDPOINT_REQUEST_TODAY_WATTAGE, method = RequestMethod.GET)
+    public ResponseEntity<Object> requestRequestTodayWattage(
+            @RequestParam(value = "token") String token,
+            @RequestParam(value = "pcName") String pcName,
+            @RequestParam(value = "intervals") int intervals) {
+        return mainService.requestRequestTodayWattage(token, pcName, intervals);
+    }
+
+    @RequestMapping(path = ENDPOINT_GENERATE_RANDOM_WATTAGE_DATA, method = RequestMethod.POST)
+    public ResponseEntity<Object> requestGenerateRandomWattageData(
+            @RequestParam(value = "token") String token,
+            @RequestParam(value = "pcName") String pcName,
+            @RequestParam(value = "interval") int interval) {
+        return mainService.requestGenerateRandomWattageData(token, pcName, interval);
     }
 }

@@ -9,6 +9,7 @@ import java.util.List;
 import static java.time.temporal.ChronoUnit.*;
 
 public class Pc implements Serializable {
+
     public enum State {ONLINE, OFFLINE, PAUSED}
 
     private final String name;
@@ -27,7 +28,7 @@ public class Pc implements Serializable {
         passwords = new HashMap<>();
         keys = new HashMap<>();
         maxWattage = 0;
-        batteryCapacityMw=0;
+        batteryCapacityMw = 0;
         wattageEntries = new ArrayList<>();
     }
 
@@ -125,7 +126,7 @@ public class Pc implements Serializable {
     }
 
     public boolean storePassword(String title, String password) {
-        var update= passwords.containsKey(title);
+        var update = passwords.containsKey(title);
         this.passwords.put(title, password);
         return update;
     }
@@ -136,7 +137,7 @@ public class Pc implements Serializable {
 
 
     public boolean storeKey(String title, String key) {
-        var update= keys.containsKey(title);
+        var update = keys.containsKey(title);
         keys.put(title, key);
         return update;
     }
@@ -145,8 +146,10 @@ public class Pc implements Serializable {
         return keys.remove(title);
     }
 
-    public double calculateWattageMean(LocalDateTime start, LocalDateTime end) {
+    public double calculateWattageMean(LocalDateTime start, LocalDateTime end, boolean ... force) {
         //It must be sorted by data
+        var span=force.length==1 && force[0];
+
         double weightedSum = 0;
         double weight = 0;
         WattageEntry lastWatt = null;
@@ -157,7 +160,7 @@ public class Pc implements Serializable {
             }
             if (watt.getDateTime().isBefore(end) && watt.getDateTime().isAfter(start)) {
                 var millisBetween = Math.abs(MILLIS.between(watt.getDateTime(), lastWatt.getDateTime()));
-                if (millisBetween < 120 * 1000) {
+                if (span||millisBetween < 120 * 1000) {
                     weightedSum += millisBetween * watt.calculateWattage(maxWattage);
                     weight += millisBetween;
                 }
@@ -167,7 +170,9 @@ public class Pc implements Serializable {
         return weightedSum / weight;
     }
 
-    public double calculateWattHour(LocalDateTime start, LocalDateTime end, boolean alsoEstimateEmptyZones) {
+    public double calculateWattHour(LocalDateTime start, LocalDateTime end, boolean alsoEstimateEmptyZones,boolean ...force) {
+        var span=force.length==1 && force[0];
+
         double weightedSum = 0;
         WattageEntry lastWatt = null;
         for (var watt : wattageEntries) {
@@ -177,7 +182,7 @@ public class Pc implements Serializable {
             }
             if (watt.getDateTime().isBefore(end) && watt.getDateTime().isAfter(start)) {
                 var millisBetween = Math.abs(MILLIS.between(watt.getDateTime(), lastWatt.getDateTime()));
-                if (millisBetween < 120 * 1000)
+                if (span||millisBetween < 120 * 1000)
                     weightedSum += millisBetween * watt.calculateWattage(maxWattage);
                 else if (alsoEstimateEmptyZones)
                     weightedSum += millisBetween * calculateWattageMean(lastWatt.getDateTime().minusMinutes(10), watt.getDateTime().plusMinutes(10));
@@ -187,8 +192,31 @@ public class Pc implements Serializable {
         return weightedSum / 3600 / 1000;
     }
 
-
-    public ArrayList<WattageEntry> getWattageEntries() {
-        return wattageEntries;
+    public ArrayList<Double> requestWattageData(LocalDateTime start, LocalDateTime end, int intervals) {
+        //only today data
+        var data = new ArrayList<Double>();
+        var seconds = Math.max(30, 3600 * 24 / intervals);
+        var start2 = LocalDateTime.of(start.getYear(), start.getMonth(), start.getDayOfMonth(), 0, 0);
+        for (int i = 0; i < intervals; ++i) {
+            start2 = start2.plusSeconds(seconds);
+            data.add(Math.round(calculateWattageMean(start, start2,true) * 100d) / 100d);
+            start = start.plusSeconds(seconds);
+        }
+        return data;
     }
+
+    public void generateRandomWattageData(LocalDateTime start, LocalDateTime end, int interval) {
+        //only today
+        var steps = 3600 * 24 / interval;
+        for (int i = 0; i < steps; ++i) {
+            start=start.plusSeconds(interval);
+            wattageEntries.add(new WattageEntry(start,true,(int)(Math.random()*101),
+                    (int)(Math.random()*101),(int)(Math.random()*101),0, 0));
+        }
+    }
+
+
+//    public ArrayList<WattageEntry> getWattageEntries() {
+//        return wattageEntries;
+//    }
 }

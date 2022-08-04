@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.io.File;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 
 import static com.mrpio.mrpowermanager.Model.User.DIR;
@@ -123,7 +124,7 @@ public class MainService {
         if (user == null)
             return new ResponseEntity<>(new JSONObject(Map.of("result", "unknown user!")), HttpStatus.OK);
 
-        if(user.getPc(pcName)!=null)
+        if (user.getPc(pcName) != null)
             return new ResponseEntity<>(new JSONObject(Map.of("result", "this pc name is already in use!")), HttpStatus.OK);
 
         var code = Code.generateCode(token, pcName);
@@ -301,6 +302,52 @@ public class MainService {
         var meanHourRounded = Math.round(wattHour * 100d) / 100d;
         return new ResponseEntity<>(new JSONObject(Map.of("result", "watt hour calculated successfully!",
                 "value", meanHourRounded)), HttpStatus.OK);
+    }
+
+    public ResponseEntity<Object> requestRequestTodayWattage(String token, String pcName, int intervals) {
+        var now = LocalDateTime.now();
+        var start = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0);
+        var end = start.plusDays(1);
+
+        var result = validateUserAndPc(token, pcName);
+        if (result.getClass() == ResponseEntity.class)
+            return (ResponseEntity<Object>) result;
+        var pc = (Pc) ((Object[]) result)[1];
+
+        var data = pc.requestWattageData(start, end, intervals);
+
+        var wattMean=pc.calculateWattageMean(start,end,true);
+        var wattHour = pc.calculateWattHour(start, end, false);
+        var wattHourEstimated = pc.calculateWattHour(start, end, true,true);
+
+        var wattMeanRounded = Math.round(wattMean * 100d) / 100d;
+        var wattHourRounded = Math.round(wattHour * 100d) / 100d;
+        var wattHourEstimatedRounded = Math.round(wattHourEstimated * 100d) / 100d;
+
+        var map=new HashMap<>(){{put("result", "watt hour calculated successfully!");
+            put("data", data);
+            put("mean", wattMeanRounded);
+            put("wattHour", wattHourRounded);
+            put("wattHourEstimated",wattHourEstimatedRounded);
+        }};
+
+        return new ResponseEntity<>(new JSONObject(map), HttpStatus.OK);
+    }
+
+    public ResponseEntity<Object> requestGenerateRandomWattageData(String token, String pcName, int interval) {
+        var now = LocalDateTime.now();
+        var start = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0);
+        var end = start.plusDays(1);
+
+        var result = validateUserAndPc(token, pcName);
+        if (result.getClass() == ResponseEntity.class)
+            return (ResponseEntity<Object>) result;
+        var pc = (Pc) ((Object[]) result)[1];
+
+        pc.generateRandomWattageData(start, end, interval);
+
+        return new ResponseEntity<>(new JSONObject(Map.of("result", "random data generated successfully!")), HttpStatus.OK);
+
     }
 }
 

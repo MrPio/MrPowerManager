@@ -63,6 +63,14 @@ public class WattageEntry implements Serializable {
         return gpuPercentage;
     }
 
+    public int getBatteryChargeRate() {
+        return batteryChargeRate;
+    }
+
+    public int getBatteryDischargeRate() {
+        return batteryDischargeRate;
+    }
+
     public int calculateWattage(int maxWattage) {
         if(!isPlugged)
             return (int) Math.round(batteryDischargeRate/1000d);
