@@ -320,28 +320,28 @@ public class MainService {
 
         var watts = pc.requestWattageData(start, end, intervals,onlyGpu,onlyBatteryCharge
                 ,false,false,false,false,false);
-        var cpus = pc.requestWattageData(start, end, intervals,false,onlyBatteryCharge
+        var cpus = pc.requestWattageData(start, end, intervals,false,false
                 ,true,false,false,false,false);
-        var gpus = pc.requestWattageData(start, end, intervals,false,onlyBatteryCharge
+        var gpus = pc.requestWattageData(start, end, intervals,false,false
                 ,false,true,false,false,false);
-        var rams = pc.requestWattageData(start, end, intervals,false,onlyBatteryCharge
+        var rams = pc.requestWattageData(start, end, intervals,false,false
                 ,false,false,true,false,false);
-        var disks = pc.requestWattageData(start, end, intervals,false,onlyBatteryCharge
+        var disks = pc.requestWattageData(start, end, intervals,false,false
                 ,false,false,false,true,false);
-        var temps = pc.requestWattageData(start, end, intervals,false,onlyBatteryCharge
+        var temps = pc.requestWattageData(start, end, intervals,false,false
                 ,false,false,false,false,true);
 
         var wattMean=pc.calculateWattageMean(start,end,onlyGpu,onlyBatteryCharge,
                 false,false,false,false,false);
-        var cpuMean=pc.calculateWattageMean(start,end,false,onlyBatteryCharge,
+        var cpuMean=pc.calculateWattageMean(start,end,false,false,
                 true,false,false,false,false);
-        var gpuMean=pc.calculateWattageMean(start,end,false,onlyBatteryCharge,
+        var gpuMean=pc.calculateWattageMean(start,end,false,false,
                 false,true,false,false,false);
-        var ramMean=pc.calculateWattageMean(start,end,false,onlyBatteryCharge,
+        var ramMean=pc.calculateWattageMean(start,end,false,false,
                 false,false,true,false,false);
-        var diskMean=pc.calculateWattageMean(start,end,false,onlyBatteryCharge,
+        var diskMean=pc.calculateWattageMean(start,end,false,false,
                 false,false,false,true,false);
-        var tempMean=pc.calculateWattageMean(start,end,false,onlyBatteryCharge,
+        var tempMean=pc.calculateWattageMean(start,end,false,false,
                 false,false,false,false,true);
 
         var wattHour = pc.calculateWattHour(start, end, false,onlyGpu,onlyBatteryCharge);
