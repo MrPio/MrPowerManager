@@ -229,8 +229,10 @@ public class Controller {
             @RequestParam(value = "token") String token,
             @RequestParam(value = "pcName") String pcName,
             @RequestParam(value = "startDate") String startDate,
-            @RequestParam(value = "endDate") String endDate) {
-        return mainService.requestCalculateWattageMean(token, pcName, startDate, endDate);
+            @RequestParam(value = "endDate") String endDate,
+            @RequestParam(value = "onlyGpu", defaultValue = "false") boolean onlyGpu,
+            @RequestParam(value = "onlyBatteryCharge", defaultValue = "false") boolean onlyBatteryCharge) {
+        return mainService.requestCalculateWattageMean(token, pcName, startDate, endDate,onlyGpu,onlyBatteryCharge);
     }
 
     @RequestMapping(path = ENDPOINT_CALCULATE_WATT_HOUR, method = RequestMethod.GET)
@@ -239,8 +241,10 @@ public class Controller {
             @RequestParam(value = "pcName") String pcName,
             @RequestParam(value = "startDate") String startDate,
             @RequestParam(value = "endDate") String endDate,
-            @RequestParam(value = "estimateEmpty", defaultValue = "false") boolean estimateEmpty) {
-        return mainService.requestCalculateWattHour(token, pcName, startDate, endDate, estimateEmpty);
+            @RequestParam(value = "estimateEmpty", defaultValue = "false") boolean estimateEmpty,
+            @RequestParam(value = "onlyGpu", defaultValue = "false") boolean onlyGpu,
+            @RequestParam(value = "onlyBatteryCharge", defaultValue = "false") boolean onlyBatteryCharge) {
+        return mainService.requestCalculateWattHour(token, pcName, startDate, endDate, estimateEmpty,onlyGpu,onlyBatteryCharge);
     }
 
 
@@ -248,8 +252,13 @@ public class Controller {
     public ResponseEntity<Object> requestRequestTodayWattage(
             @RequestParam(value = "token") String token,
             @RequestParam(value = "pcName") String pcName,
-            @RequestParam(value = "intervals") int intervals) {
-        return mainService.requestRequestTodayWattage(token, pcName, intervals);
+            @RequestParam(value = "intervals") int intervals,
+            @RequestParam(value = "endDate") String endDate,
+            @RequestParam(value = "durationSeconds",defaultValue = "86400") int durationSeconds,
+            @RequestParam(value = "onlyGpu", defaultValue = "false") boolean onlyGpu,
+            @RequestParam(value = "onlyBatteryCharge", defaultValue = "false") boolean onlyBatteryCharge) {
+        return mainService.requestRequestTodayWattage(token, pcName, intervals,endDate,durationSeconds,onlyGpu,
+                onlyBatteryCharge);
     }
 
     @RequestMapping(path = ENDPOINT_GENERATE_RANDOM_WATTAGE_DATA, method = RequestMethod.POST)

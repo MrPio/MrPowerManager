@@ -65,6 +65,22 @@ public class Pc implements Serializable {
         return batteryCapacityMw;
     }
 
+    public double getWattage() {
+        return wattageEntries.get(wattageEntries.size() - 1).calculateWattage(maxWattage);
+    }
+
+    public double getOnlyGpuWattage() {
+        return wattageEntries.get(wattageEntries.size() - 1).calculateOnlyGpuWattage(maxWattage);
+    }
+
+    public double getBatteryCharging() {
+        return wattageEntries.get(wattageEntries.size() - 1).getBatteryChargeRate();
+    }
+
+    public double getBatteryDischarging() {
+        return wattageEntries.get(wattageEntries.size() - 1).getBatteryDischargeRate();
+    }
+
     public void setBatteryCapacityMw(int batteryCapacityMw) {
         this.batteryCapacityMw = batteryCapacityMw;
     }
@@ -116,7 +132,7 @@ public class Pc implements Serializable {
 
     public void updatePcStatus(PcStatus pcStatus) {
         wattageEntries.add(new WattageEntry(pcStatus.getUpdated(), pcStatus.isBatteryPlugged(),
-                pcStatus.getCpuLevel(), pcStatus.getGpuLevel(), pcStatus.getBatteryPerc(),
+                pcStatus.getCpuLevel(), pcStatus.getGpuLevel(), pcStatus.getRamLevel(), pcStatus.getStorageLevel(), pcStatus.getBatteryPerc(),
                 pcStatus.getBatteryChargeRate(), pcStatus.getBatteryDischargeRate()));
         this.pcStatus = pcStatus;
     }
@@ -146,9 +162,11 @@ public class Pc implements Serializable {
         return keys.remove(title);
     }
 
-    public double calculateWattageMean(LocalDateTime start, LocalDateTime end, boolean ... force) {
+    public double calculateWattageMean(LocalDateTime start, LocalDateTime end, boolean onlyGpu,
+                                       boolean onlyBatteryCharge,
+                                       boolean cpu,boolean gpu,boolean ram, boolean disk,boolean... force) {
         //It must be sorted by data
-        var span=force.length==1 && force[0];
+        var span = force.length == 1 && force[0];
 
         double weightedSum = 0;
         double weight = 0;
@@ -160,18 +178,32 @@ public class Pc implements Serializable {
             }
             if (watt.getDateTime().isBefore(end) && watt.getDateTime().isAfter(start)) {
                 var millisBetween = Math.abs(MILLIS.between(watt.getDateTime(), lastWatt.getDateTime()));
-                if (span||millisBetween < 120 * 1000) {
-                    weightedSum += millisBetween * watt.calculateWattage(maxWattage);
+                if (span || millisBetween < 120 * 1000) {
+                    if (onlyGpu)
+                        weightedSum += millisBetween * watt.calculateOnlyGpuWattage(maxWattage);
+                    else if (onlyBatteryCharge)
+                        weightedSum += millisBetween * watt.calculateOnlyBatteryCharge();
+                    else if (cpu)
+                        weightedSum+= millisBetween * watt.getCpuPercentage();
+                    else if (gpu)
+                        weightedSum+= millisBetween * watt.getGpuPercentage();
+                    else if (ram)
+                        weightedSum+= millisBetween * watt.getRamPercentage();
+                    else if (disk)
+                        weightedSum+= millisBetween * watt.getDiskPercentage();
+                    else
+                        weightedSum += millisBetween * watt.calculateWattage(maxWattage);
                     weight += millisBetween;
                 }
             }
             lastWatt = watt;
         }
-        return weightedSum / weight;
+        return Math.round((weightedSum / weight) * 100d) / 100d;
     }
 
-    public double calculateWattHour(LocalDateTime start, LocalDateTime end, boolean alsoEstimateEmptyZones,boolean ...force) {
-        var span=force.length==1 && force[0];
+    public double calculateWattHour(LocalDateTime start, LocalDateTime end, boolean alsoEstimateEmptyZones,
+                                    boolean onlyGpu, boolean onlyBatteryCharge, boolean... force) {
+        var span = force.length == 1 && force[0];
 
         double weightedSum = 0;
         WattageEntry lastWatt = null;
@@ -180,26 +212,64 @@ public class Pc implements Serializable {
                 lastWatt = watt;
                 continue;
             }
+            if(lastWatt.getDateTime().isBefore(start)){
+                lastWatt = watt;
+                continue;
+            }
             if (watt.getDateTime().isBefore(end) && watt.getDateTime().isAfter(start)) {
                 var millisBetween = Math.abs(MILLIS.between(watt.getDateTime(), lastWatt.getDateTime()));
-                if (span||millisBetween < 120 * 1000)
-                    weightedSum += millisBetween * watt.calculateWattage(maxWattage);
+                if (span || millisBetween < 120 * 1000)
+                    if (onlyGpu)
+                        weightedSum += millisBetween * watt.calculateOnlyGpuWattage(maxWattage);
+                    else if (onlyBatteryCharge)
+                        weightedSum += millisBetween * watt.calculateOnlyBatteryCharge();
+                    else
+                        weightedSum += millisBetween * watt.calculateWattage(maxWattage);
                 else if (alsoEstimateEmptyZones)
-                    weightedSum += millisBetween * calculateWattageMean(lastWatt.getDateTime().minusMinutes(10), watt.getDateTime().plusMinutes(10));
+                    weightedSum += millisBetween * calculateWattageMean
+                            (lastWatt.getDateTime().minusMinutes(10), watt.getDateTime().plusMinutes(10),
+                                    onlyGpu, onlyBatteryCharge,false,false,false,false);
             }
             lastWatt = watt;
         }
-        return weightedSum / 3600 / 1000;
+        return Math.round((weightedSum / 3600 / 1000) * 100d) / 100d;
     }
 
-    public ArrayList<Double> requestWattageData(LocalDateTime start, LocalDateTime end, int intervals) {
-        //only today data
+    public ArrayList<Double> requestWattageData(LocalDateTime start, LocalDateTime end, int intervals,
+                                                boolean onlyGpu, boolean onlyBatteryCharge,
+                                                boolean cpu,boolean gpu,boolean ram, boolean disk) {
         var data = new ArrayList<Double>();
-        var seconds = Math.max(30, 3600 * 24 / intervals);
-        var start2 = LocalDateTime.of(start.getYear(), start.getMonth(), start.getDayOfMonth(), 0, 0);
+        var seconds = Math.max(16, SECONDS.between(start, end)) / intervals;
+
+        var start2 = LocalDateTime.of(start.getYear(), start.getMonth(), start.getDayOfMonth(),
+                start.getHour(), start.getMinute(), start.getSecond());
         for (int i = 0; i < intervals; ++i) {
             start2 = start2.plusSeconds(seconds);
-            data.add(Math.round(calculateWattageMean(start, start2,true) * 100d) / 100d);
+
+            if (seconds <= 30) {
+                data.add(0d);
+                for (var watt : wattageEntries) {
+                    if (watt.getDateTime().isAfter(start) && watt.getDateTime().isBefore(start2)) {
+                        data.remove(data.size()-1);
+                        if (onlyGpu)
+                            data.add((double) watt.calculateOnlyGpuWattage(maxWattage));
+                        else if (onlyBatteryCharge)
+                            data.add((double) watt.calculateOnlyBatteryCharge());
+                        else if (cpu)
+                            data.add((double) watt.getCpuPercentage());
+                        else if (gpu)
+                            data.add((double) watt.getGpuPercentage());
+                        else if (ram)
+                            data.add((double) watt.getRamPercentage());
+                        else if (disk)
+                            data.add((double) watt.getDiskPercentage());
+                        else
+                            data.add((double) watt.calculateWattage(maxWattage));
+                        break;
+                    }
+                }
+            } else
+                data.add(Math.round(calculateWattageMean(start, start2, onlyGpu, onlyBatteryCharge,cpu,gpu,ram,disk) * 100d) / 100d);
             start = start.plusSeconds(seconds);
         }
         return data;
@@ -209,9 +279,9 @@ public class Pc implements Serializable {
         //only today
         var steps = 3600 * 24 / interval;
         for (int i = 0; i < steps; ++i) {
-            start=start.plusSeconds(interval);
-            wattageEntries.add(new WattageEntry(start,true,(int)(Math.random()*101),
-                    (int)(Math.random()*101),(int)(Math.random()*101),0, 0));
+            start = start.plusSeconds(interval);
+            wattageEntries.add(new WattageEntry(start, true, (int) (Math.random() * 101),
+                    (int) (Math.random() * 101), (int) (Math.random() * 101), (int) (Math.random() * 101), (int) (Math.random() * 101), 0, 0));
         }
     }
 

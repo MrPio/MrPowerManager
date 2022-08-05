@@ -271,7 +271,8 @@ public class MainService {
         return new ResponseEntity<>(new JSONObject(Map.of("result", "Battery capacity set successfully!")), HttpStatus.OK);
     }
 
-    public ResponseEntity<Object> requestCalculateWattageMean(String token, String pcName, String startDate, String endDate) {
+    public ResponseEntity<Object> requestCalculateWattageMean(String token, String pcName, String startDate,
+                                                              String endDate,boolean onlyGpu,boolean onlyBatteryCharge) {
         var start = Controller.stringToLocalDate(startDate);
         var end = Controller.stringToLocalDate(endDate);
         if (MINUTES.between(start, end) < 2)
@@ -281,14 +282,15 @@ public class MainService {
         if (result.getClass() == ResponseEntity.class)
             return (ResponseEntity<Object>) result;
         var pc = (Pc) ((Object[]) result)[1];
-        var mean = pc.calculateWattageMean(start, end);
+        var mean = pc.calculateWattageMean(start, end,onlyGpu,onlyBatteryCharge,false,false,false,false);
         var meanRounded = Math.round(mean * 100d) / 100d;
         return new ResponseEntity<>(new JSONObject(Map.of("result", "Wattage mean calculated successfully!",
                 "value", meanRounded)), HttpStatus.OK);
 
     }
 
-    public ResponseEntity<Object> requestCalculateWattHour(String token, String pcName, String startDate, String endDate, boolean estimateEmpty) {
+    public ResponseEntity<Object> requestCalculateWattHour(String token, String pcName, String startDate, String endDate,
+                                                           boolean estimateEmpty,boolean onlyGpu,boolean onlyBatteryCharge) {
         var start = Controller.stringToLocalDate(startDate);
         var end = Controller.stringToLocalDate(endDate);
         if (MINUTES.between(start, end) < 2)
@@ -298,37 +300,62 @@ public class MainService {
         if (result.getClass() == ResponseEntity.class)
             return (ResponseEntity<Object>) result;
         var pc = (Pc) ((Object[]) result)[1];
-        var wattHour = pc.calculateWattHour(start, end, estimateEmpty);
+        var wattHour = pc.calculateWattHour(start, end, estimateEmpty,onlyGpu,onlyBatteryCharge);
         var meanHourRounded = Math.round(wattHour * 100d) / 100d;
         return new ResponseEntity<>(new JSONObject(Map.of("result", "watt hour calculated successfully!",
                 "value", meanHourRounded)), HttpStatus.OK);
     }
 
-    public ResponseEntity<Object> requestRequestTodayWattage(String token, String pcName, int intervals) {
-        var now = LocalDateTime.now();
-        var start = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0);
-        var end = start.plusDays(1);
+    public ResponseEntity<Object> requestRequestTodayWattage(String token, String pcName, int intervals,
+                                                             String endDate, int durationSeconds, boolean onlyGpu,
+                                                             boolean onlyBatteryCharge) {
+        var end=Controller.stringFullToLocalDate(endDate);
+        var start = end.minusSeconds(durationSeconds);
 
         var result = validateUserAndPc(token, pcName);
         if (result.getClass() == ResponseEntity.class)
             return (ResponseEntity<Object>) result;
         var pc = (Pc) ((Object[]) result)[1];
 
-        var data = pc.requestWattageData(start, end, intervals);
+        var watts = pc.requestWattageData(start, end, intervals,onlyGpu,onlyBatteryCharge
+                ,false,false,false,false);
+        var cpus = pc.requestWattageData(start, end, intervals,false,onlyBatteryCharge
+                ,true,false,false,false);
+        var gpus = pc.requestWattageData(start, end, intervals,false,onlyBatteryCharge
+                ,false,true,false,false);
+        var rams = pc.requestWattageData(start, end, intervals,false,onlyBatteryCharge
+                ,false,false,true,false);
+        var disks = pc.requestWattageData(start, end, intervals,false,onlyBatteryCharge
+                ,false,false,false,true);
 
-        var wattMean=pc.calculateWattageMean(start,end,true);
-        var wattHour = pc.calculateWattHour(start, end, false);
-        var wattHourEstimated = pc.calculateWattHour(start, end, true,true);
+        var wattMean=pc.calculateWattageMean(start,end,onlyGpu,onlyBatteryCharge,
+                false,false,false,false);
+        var cpuMean=pc.calculateWattageMean(start,end,false,onlyBatteryCharge,
+                true,false,false,false);
+        var gpuMean=pc.calculateWattageMean(start,end,false,onlyBatteryCharge,
+                false,true,false,false);
+        var ramMean=pc.calculateWattageMean(start,end,false,onlyBatteryCharge,
+                false,false,true,false);
+        var storageMean=pc.calculateWattageMean(start,end,false,onlyBatteryCharge,
+                false,false,false,true);
 
-        var wattMeanRounded = Math.round(wattMean * 100d) / 100d;
-        var wattHourRounded = Math.round(wattHour * 100d) / 100d;
-        var wattHourEstimatedRounded = Math.round(wattHourEstimated * 100d) / 100d;
+        var wattHour = pc.calculateWattHour(start, end, false,onlyGpu,onlyBatteryCharge);
+        var wattHourEstimated = pc.calculateWattHour(start, end, true,onlyGpu,onlyBatteryCharge);
 
-        var map=new HashMap<>(){{put("result", "watt hour calculated successfully!");
-            put("data", data);
-            put("mean", wattMeanRounded);
-            put("wattHour", wattHourRounded);
-            put("wattHourEstimated",wattHourEstimatedRounded);
+        var map=new HashMap<>(){{
+            put("result", "data collected successfully!");
+            put("watts", watts);
+            put("cpus", cpus);
+            put("gpus", gpus);
+            put("rams", rams);
+            put("disks", disks);
+            put("wattMean", wattMean);
+            put("cpuMean", cpuMean);
+            put("gpuMean", gpuMean);
+            put("ramMean", ramMean);
+            put("storageMean", storageMean);
+            put("wattHour", wattHour);
+            put("wattHourEstimated",wattHourEstimated);
         }};
 
         return new ResponseEntity<>(new JSONObject(map), HttpStatus.OK);
