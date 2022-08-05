@@ -282,7 +282,8 @@ public class MainService {
         if (result.getClass() == ResponseEntity.class)
             return (ResponseEntity<Object>) result;
         var pc = (Pc) ((Object[]) result)[1];
-        var mean = pc.calculateWattageMean(start, end,onlyGpu,onlyBatteryCharge,false,false,false,false);
+        var mean = pc.calculateWattageMean(start, end,onlyGpu,onlyBatteryCharge,
+                false,false,false,false,false);
         var meanRounded = Math.round(mean * 100d) / 100d;
         return new ResponseEntity<>(new JSONObject(Map.of("result", "Wattage mean calculated successfully!",
                 "value", meanRounded)), HttpStatus.OK);
@@ -318,26 +319,30 @@ public class MainService {
         var pc = (Pc) ((Object[]) result)[1];
 
         var watts = pc.requestWattageData(start, end, intervals,onlyGpu,onlyBatteryCharge
-                ,false,false,false,false);
+                ,false,false,false,false,false);
         var cpus = pc.requestWattageData(start, end, intervals,false,onlyBatteryCharge
-                ,true,false,false,false);
+                ,true,false,false,false,false);
         var gpus = pc.requestWattageData(start, end, intervals,false,onlyBatteryCharge
-                ,false,true,false,false);
+                ,false,true,false,false,false);
         var rams = pc.requestWattageData(start, end, intervals,false,onlyBatteryCharge
-                ,false,false,true,false);
+                ,false,false,true,false,false);
         var disks = pc.requestWattageData(start, end, intervals,false,onlyBatteryCharge
-                ,false,false,false,true);
+                ,false,false,false,true,false);
+        var temps = pc.requestWattageData(start, end, intervals,false,onlyBatteryCharge
+                ,false,false,false,false,true);
 
         var wattMean=pc.calculateWattageMean(start,end,onlyGpu,onlyBatteryCharge,
-                false,false,false,false);
+                false,false,false,false,false);
         var cpuMean=pc.calculateWattageMean(start,end,false,onlyBatteryCharge,
-                true,false,false,false);
+                true,false,false,false,false);
         var gpuMean=pc.calculateWattageMean(start,end,false,onlyBatteryCharge,
-                false,true,false,false);
+                false,true,false,false,false);
         var ramMean=pc.calculateWattageMean(start,end,false,onlyBatteryCharge,
-                false,false,true,false);
-        var storageMean=pc.calculateWattageMean(start,end,false,onlyBatteryCharge,
-                false,false,false,true);
+                false,false,true,false,false);
+        var diskMean=pc.calculateWattageMean(start,end,false,onlyBatteryCharge,
+                false,false,false,true,false);
+        var tempMean=pc.calculateWattageMean(start,end,false,onlyBatteryCharge,
+                false,false,false,false,true);
 
         var wattHour = pc.calculateWattHour(start, end, false,onlyGpu,onlyBatteryCharge);
         var wattHourEstimated = pc.calculateWattHour(start, end, true,onlyGpu,onlyBatteryCharge);
@@ -349,11 +354,13 @@ public class MainService {
             put("gpus", gpus);
             put("rams", rams);
             put("disks", disks);
+            put("temps", temps);
             put("wattMean", wattMean);
             put("cpuMean", cpuMean);
             put("gpuMean", gpuMean);
             put("ramMean", ramMean);
-            put("storageMean", storageMean);
+            put("diskMean", diskMean);
+            put("tempMean", tempMean);
             put("wattHour", wattHour);
             put("wattHourEstimated",wattHourEstimated);
         }};

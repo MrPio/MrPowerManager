@@ -132,7 +132,8 @@ public class Pc implements Serializable {
 
     public void updatePcStatus(PcStatus pcStatus) {
         wattageEntries.add(new WattageEntry(pcStatus.getUpdated(), pcStatus.isBatteryPlugged(),
-                pcStatus.getCpuLevel(), pcStatus.getGpuLevel(), pcStatus.getRamLevel(), pcStatus.getStorageLevel(), pcStatus.getBatteryPerc(),
+                pcStatus.getCpuLevel(), pcStatus.getGpuLevel(), pcStatus.getRamLevel(),
+                pcStatus.getStorageLevel(), pcStatus.getGpuTemp(), pcStatus.getBatteryPerc(),
                 pcStatus.getBatteryChargeRate(), pcStatus.getBatteryDischargeRate()));
         this.pcStatus = pcStatus;
     }
@@ -164,7 +165,7 @@ public class Pc implements Serializable {
 
     public double calculateWattageMean(LocalDateTime start, LocalDateTime end, boolean onlyGpu,
                                        boolean onlyBatteryCharge,
-                                       boolean cpu,boolean gpu,boolean ram, boolean disk,boolean... force) {
+                                       boolean cpu, boolean gpu, boolean ram, boolean disk, boolean temp, boolean... force) {
         //It must be sorted by data
         var span = force.length == 1 && force[0];
 
@@ -184,13 +185,15 @@ public class Pc implements Serializable {
                     else if (onlyBatteryCharge)
                         weightedSum += millisBetween * watt.calculateOnlyBatteryCharge();
                     else if (cpu)
-                        weightedSum+= millisBetween * watt.getCpuPercentage();
+                        weightedSum += millisBetween * watt.getCpuPercentage();
                     else if (gpu)
-                        weightedSum+= millisBetween * watt.getGpuPercentage();
+                        weightedSum += millisBetween * watt.getGpuPercentage();
                     else if (ram)
-                        weightedSum+= millisBetween * watt.getRamPercentage();
+                        weightedSum += millisBetween * watt.getRamPercentage();
                     else if (disk)
-                        weightedSum+= millisBetween * watt.getDiskPercentage();
+                        weightedSum += millisBetween * watt.getDiskPercentage();
+                    else if (temp)
+                        weightedSum += millisBetween * watt.getTemp();
                     else
                         weightedSum += millisBetween * watt.calculateWattage(maxWattage);
                     weight += millisBetween;
@@ -212,7 +215,7 @@ public class Pc implements Serializable {
                 lastWatt = watt;
                 continue;
             }
-            if(lastWatt.getDateTime().isBefore(start)){
+            if (lastWatt.getDateTime().isBefore(start)) {
                 lastWatt = watt;
                 continue;
             }
@@ -228,7 +231,7 @@ public class Pc implements Serializable {
                 else if (alsoEstimateEmptyZones)
                     weightedSum += millisBetween * calculateWattageMean
                             (lastWatt.getDateTime().minusMinutes(10), watt.getDateTime().plusMinutes(10),
-                                    onlyGpu, onlyBatteryCharge,false,false,false,false);
+                                    onlyGpu, onlyBatteryCharge, false, false, false, false,false);
             }
             lastWatt = watt;
         }
@@ -237,7 +240,7 @@ public class Pc implements Serializable {
 
     public ArrayList<Double> requestWattageData(LocalDateTime start, LocalDateTime end, int intervals,
                                                 boolean onlyGpu, boolean onlyBatteryCharge,
-                                                boolean cpu,boolean gpu,boolean ram, boolean disk) {
+                                                boolean cpu, boolean gpu, boolean ram, boolean disk, boolean temp) {
         var data = new ArrayList<Double>();
         var seconds = Math.max(16, SECONDS.between(start, end)) / intervals;
 
@@ -250,7 +253,7 @@ public class Pc implements Serializable {
                 data.add(0d);
                 for (var watt : wattageEntries) {
                     if (watt.getDateTime().isAfter(start) && watt.getDateTime().isBefore(start2)) {
-                        data.remove(data.size()-1);
+                        data.remove(data.size() - 1);
                         if (onlyGpu)
                             data.add((double) watt.calculateOnlyGpuWattage(maxWattage));
                         else if (onlyBatteryCharge)
@@ -263,13 +266,15 @@ public class Pc implements Serializable {
                             data.add((double) watt.getRamPercentage());
                         else if (disk)
                             data.add((double) watt.getDiskPercentage());
+                        else if (temp)
+                            data.add((double) watt.getTemp());
                         else
                             data.add((double) watt.calculateWattage(maxWattage));
                         break;
                     }
                 }
             } else
-                data.add(Math.round(calculateWattageMean(start, start2, onlyGpu, onlyBatteryCharge,cpu,gpu,ram,disk) * 100d) / 100d);
+                data.add(Math.round(calculateWattageMean(start, start2, onlyGpu, onlyBatteryCharge, cpu, gpu, ram, disk,temp) * 100d) / 100d);
             start = start.plusSeconds(seconds);
         }
         return data;
@@ -281,7 +286,8 @@ public class Pc implements Serializable {
         for (int i = 0; i < steps; ++i) {
             start = start.plusSeconds(interval);
             wattageEntries.add(new WattageEntry(start, true, (int) (Math.random() * 101),
-                    (int) (Math.random() * 101), (int) (Math.random() * 101), (int) (Math.random() * 101), (int) (Math.random() * 101), 0, 0));
+                    (int) (Math.random() * 101), (int) (Math.random() * 101), (int) (Math.random() * 101)
+                    , (int) (Math.random() * 101), (int) (Math.random() * 101), 0, 0));
         }
     }
 

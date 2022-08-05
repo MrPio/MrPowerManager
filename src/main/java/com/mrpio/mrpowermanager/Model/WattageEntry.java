@@ -15,6 +15,7 @@ public class WattageEntry implements Serializable {
     private final int gpuPercentage;
     private final int ramPercentage;
     private final int diskPercentage;
+    private final int temp;
     private final int batteryPercentage;
     private final int batteryChargeRate;
     private final int batteryDischargeRate;
@@ -25,6 +26,7 @@ public class WattageEntry implements Serializable {
                         @JsonProperty("gpuPercentage") int gpuPercentage,
                         @JsonProperty("ramPercentage") int ramPercentage,
                         @JsonProperty("diskPercentage") int diskPercentage,
+                        @JsonProperty("temp") int temp,
                         @JsonProperty("batteryPercentage") int batteryPercentage,
                         @JsonProperty("batteryChargeRate") int batteryChargeRate,
                         @JsonProperty("batteryDischargeRate") int batteryDischargeRate) {
@@ -34,18 +36,20 @@ public class WattageEntry implements Serializable {
         this.gpuPercentage = gpuPercentage;
         this.ramPercentage = ramPercentage;
         this.diskPercentage = diskPercentage;
+        this.temp = temp;
         this.batteryPercentage = batteryPercentage;
         this.batteryChargeRate = batteryChargeRate;
         this.batteryDischargeRate = batteryDischargeRate;
     }
 
-    public WattageEntry(LocalDateTime dateTime, boolean isPlugged, int cpuPercentage, int gpuPercentage, int ramPercentage, int diskPercentage, int batteryPercentage, int batteryChargeRate, int batteryDischargeRate) {
+    public WattageEntry(LocalDateTime dateTime, boolean isPlugged, int cpuPercentage, int gpuPercentage, int ramPercentage, int diskPercentage, int temp, int batteryPercentage, int batteryChargeRate, int batteryDischargeRate) {
         this.dateTime = dateTime;
         this.isPlugged = isPlugged;
         this.cpuPercentage = cpuPercentage;
         this.gpuPercentage = gpuPercentage;
         this.ramPercentage = ramPercentage;
         this.diskPercentage = diskPercentage;
+        this.temp = temp;
         this.batteryPercentage = batteryPercentage;
         this.batteryChargeRate = batteryChargeRate;
         this.batteryDischargeRate = batteryDischargeRate;
@@ -87,6 +91,10 @@ public class WattageEntry implements Serializable {
         return diskPercentage;
     }
 
+    public int getTemp() {
+        return temp;
+    }
+
     public int calculateOnlyGpuWattage(int maxWattage){
         return (int) (gpuPercentage*0.002d * maxWattage);
     }
@@ -96,6 +104,8 @@ public class WattageEntry implements Serializable {
     }
 
     public int calculateWattage(int maxWattage) {
+        if(maxWattage==0)
+            return 0;
         if(!isPlugged)
             return (int) Math.round(batteryDischargeRate/1000d);
 
