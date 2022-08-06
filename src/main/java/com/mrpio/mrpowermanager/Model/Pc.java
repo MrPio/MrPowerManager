@@ -66,18 +66,26 @@ public class Pc implements Serializable {
     }
 
     public double getWattage() {
+        if(wattageEntries.isEmpty())
+            return 0;
         return wattageEntries.get(wattageEntries.size() - 1).calculateWattage(maxWattage);
     }
 
     public double getOnlyGpuWattage() {
+        if(wattageEntries.isEmpty())
+            return 0;
         return wattageEntries.get(wattageEntries.size() - 1).calculateOnlyGpuWattage(maxWattage);
     }
 
     public double getBatteryCharging() {
+        if(wattageEntries.isEmpty())
+            return 0;
         return wattageEntries.get(wattageEntries.size() - 1).getBatteryChargeRate();
     }
 
     public double getBatteryDischarging() {
+        if(wattageEntries.isEmpty())
+            return 0;
         return wattageEntries.get(wattageEntries.size() - 1).getBatteryDischargeRate();
     }
 
