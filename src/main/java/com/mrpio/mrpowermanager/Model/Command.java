@@ -11,6 +11,8 @@ public class Command implements Serializable {
     public enum Commands {
         SOUND_VALUE,
         BRIGHTNESS_VALUE,
+        BRIGHTNESS_UP,
+        BRIGHTNESS_DOWN,
 
         RED_LIGHT_ON,
         RED_LIGHT_OFF,

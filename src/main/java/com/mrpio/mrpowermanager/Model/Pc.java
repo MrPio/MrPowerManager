@@ -256,8 +256,7 @@ public class Pc implements Serializable {
                 start.getHour(), start.getMinute(), start.getSecond());
         for (int i = 0; i < intervals; ++i) {
             start2 = start2.plusSeconds(seconds);
-
-            if (seconds <= 30) {
+//            if (seconds <= 30) {
                 data.add(0d);
                 for (var watt : wattageEntries) {
                     if (watt.getDateTime().isAfter(start) && watt.getDateTime().isBefore(start2)) {
@@ -281,8 +280,8 @@ public class Pc implements Serializable {
                         break;
                     }
                 }
-            } else
-                data.add(Math.round(calculateWattageMean(start, start2, onlyGpu, onlyBatteryCharge, cpu, gpu, ram, disk,temp) * 100d) / 100d);
+//            } else
+//                data.add(Math.round(calculateWattageMean(start, start2, onlyGpu, onlyBatteryCharge, cpu, gpu, ram, disk,temp) * 100d) / 100d);
             start = start.plusSeconds(seconds);
         }
         return data;
