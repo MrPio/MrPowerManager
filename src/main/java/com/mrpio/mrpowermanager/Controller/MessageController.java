@@ -6,6 +6,7 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.RestController;
 
 @EnableScheduling
@@ -21,9 +22,8 @@ public class MessageController {
         simpMessagingTemplate.convertAndSend("/topic/messages/" + to, message);
     }
 
-//    @Scheduled(fixedDelayString = "3")
-//    public void blastToClientsHostReport() {
-//        System.out.println("Sending something on the websocket");
-//        simpMessagingTemplate.convertAndSend("/topic/greeting", "Hello World");
-//    }
+    @MessageMapping("/keepAlive")
+    public void blastToClientsHostReport() {
+        System.out.println("Keep alive received");
+    }
 }
