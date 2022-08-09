@@ -23,23 +23,23 @@ public class Controller {
 
     final String ENDPOINT_SIGNUP = "/signup";
     final String ENDPOINT_LOGIN = "/login";
-    final String ENDPOINT_ADD_PC = "/addPc";//<----------------------DEPRECATED
-    final String ENDPOINT_GET_PC_STATUS = "/getPcStatus";
-    final String ENDPOINT_SCHEDULE_COMMAND = "/scheduleCommand";
-    final String ENDPOINT_AVAILABLE_COMMANDS = "/availableCommands";
-    final String ENDPOINT_END_COMMAND = "/endCommand";
+    final String ENDPOINT_ADD_PC = "/addPc";//DEPRECATED
+    final String ENDPOINT_GET_PC_STATUS = "/getPcStatus";//<----------------------WEBSOCKET
+    final String ENDPOINT_SCHEDULE_COMMAND = "/scheduleCommand";//<----------------------WEBSOCKET
+    final String ENDPOINT_AVAILABLE_COMMANDS = "/availableCommands";//<----------------------WEBSOCKET
+    final String ENDPOINT_END_COMMAND = "/endCommand";//<----------------------WEBSOCKET
     final String ENDPOINT_REQUEST_CODE = "/requestCode";
-    final String ENDPOINT_VALIDATE_CODE = "/validateCode";
-    final String ENDPOINT_UPDATE_PC_STATUS = "/updatePcStatus";
+    final String ENDPOINT_VALIDATE_CODE = "/validateCode";//TODO<----------------------WEBSOCKET
+    final String ENDPOINT_UPDATE_PC_STATUS = "/updatePcStatus";//<----------------------WEBSOCKET
     final String ENDPOINT_UPLOAD_WATTAGE_ENTRIES = "/uploadWattageEntries";
     final String ENDPOINT_STORE_PASSWORD = "/storePassword";
     final String ENDPOINT_DELETE_PASSWORD = "/deletePassword";
-    final String ENDPOINT_SEND_KEY = "/sendKey";
-    final String ENDPOINT_REQUEST_KEY = "/requestKey";
+    final String ENDPOINT_SEND_KEY = "/sendKey";//TODO<----------------------WEBSOCKET
+    final String ENDPOINT_REQUEST_KEY = "/requestKey";//TODO<----------------------WEBSOCKET
     final String ENDPOINT_DELETE_ACCOUNT = "/deleteAccount";
     final String ENDPOINT_DELETE_PC = "/deletePc";
-    final String ENDPOINT_ADD_PC_MAX_WATTAGE = "/addPcMaxWattage";//<--- given by client
-    final String ENDPOINT_ADD_PC_BATTERY_CAPACITY = "/addPcBatteryCapacity";//<--- given by server
+    final String ENDPOINT_ADD_PC_MAX_WATTAGE = "/addPcMaxWattage";//given by client
+    final String ENDPOINT_ADD_PC_BATTERY_CAPACITY = "/addPcBatteryCapacity";//given by server
     final String ENDPOINT_CALCULATE_WATTAGE_MEAN = "/calculateWattageMean";
     final String ENDPOINT_CALCULATE_WATT_HOUR = "/calculateWattHour";
     final String ENDPOINT_REQUEST_TODAY_WATTAGE = "/requestTodayWattage";
@@ -55,6 +55,10 @@ public class Controller {
 
     public static LocalDateTime stringFullToLocalDate(String date) {
         return LocalDateTime.parse(date, formatterFull);
+    }
+
+    public static String keepOnlyAlphaNum(String raw){
+        return raw.replaceAll("[^a-zA-Z0-9]+","_");
     }
 
     MainService mainService = new MainService();

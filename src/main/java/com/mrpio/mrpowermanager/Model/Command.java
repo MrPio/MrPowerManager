@@ -2,6 +2,8 @@ package com.mrpio.mrpowermanager.Model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.mrpio.mrpowermanager.Controller.Controller;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -50,8 +52,8 @@ public class Command implements Serializable {
             return value;
         }
 
-        public void setValue(int value) {
-            this.value = value;
+        public Commands setValue(int value) {
+            this.value = value;return this;
         }
     }
 
@@ -69,6 +71,13 @@ public class Command implements Serializable {
 
     private boolean done;
 
+    public Command(
+            @JsonProperty("command")String command,
+            @JsonProperty("value")String value,
+            @JsonProperty("commandScheduledDate") String commandScheduledDate) {
+        this.command = Commands.valueOf(command).setValue(Integer.parseInt(value));
+        this.commandScheduledDate = Controller.stringToLocalDate(commandScheduledDate);
+    }
 
     public Command(Commands command, LocalDateTime commandSentDate, LocalDateTime commandScheduledDate) {
         this.command = command;
@@ -132,5 +141,16 @@ public class Command implements Serializable {
         this.done = done;
     }
 
-
+    @Override
+    public String toString() {
+        return "Command{" +
+                "command=" + command +
+                ", id=" + id +
+                ", commandSentDate=" + commandSentDate +
+                ", commandScheduledDate=" + commandScheduledDate +
+                ", commandReceivedDate=" + commandReceivedDate +
+                ", commandDoneDate=" + commandDoneDate +
+                ", done=" + done +
+                '}';
+    }
 }

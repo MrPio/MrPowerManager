@@ -64,6 +64,34 @@ public class PcStatus implements Serializable {
         updated = LocalDateTime.now();
     }
 
+    public PcStatus(String wifi, String bluetooth, String batteryPlugged, String airplane,
+                    String mute, String redLight, String saveBattery, String hotspot, String isLocked,
+                    String sound, String brightness, String batteryPerc, String batteryMinutes, String cpuLevel, String ramLevel,
+                    String redLightLevel, String storageLevel, String gpuLevel, String gpuTemp, String batteryChargeRate,
+                    String batteryDischargeRate) {
+        this.wifi = Boolean.parseBoolean(wifi);
+        this.bluetooth = Boolean.parseBoolean(bluetooth);
+        this.batteryPlugged = Boolean.parseBoolean(batteryPlugged);
+        this.airplane = Boolean.parseBoolean(airplane);
+        this.mute = Boolean.parseBoolean(mute);
+        this.redLight = Boolean.parseBoolean(redLight);
+        this.saveBattery = Boolean.parseBoolean(saveBattery);
+        this.hotspot = Boolean.parseBoolean(hotspot);
+        this.isLocked = Boolean.parseBoolean(isLocked);
+        this.sound = Integer.parseInt(sound);
+        this.brightness = Integer.parseInt(brightness);
+        this.batteryPerc = Integer.parseInt(batteryPerc);
+        this.batteryMinutes = Integer.parseInt(batteryMinutes);
+        this.cpuLevel = Integer.parseInt(cpuLevel);
+        this.ramLevel = Integer.parseInt(ramLevel);
+        this.redLightLevel = Integer.parseInt(redLightLevel);
+        this.storageLevel = Integer.parseInt(storageLevel);
+        this.gpuLevel = Integer.parseInt(gpuLevel);
+        this.gpuTemp = Integer.parseInt(gpuTemp);
+        this.batteryChargeRate = Integer.parseInt(batteryChargeRate);
+        this.batteryDischargeRate = Integer.parseInt(batteryDischargeRate);
+    }
+
     public boolean isLocked() {
         return isLocked;
     }
