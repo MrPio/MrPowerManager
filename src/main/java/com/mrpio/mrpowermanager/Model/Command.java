@@ -59,6 +59,7 @@ public class Command implements Serializable {
 
     private final Commands command;
     private int id;
+    private boolean scheduled;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime commandSentDate;
@@ -72,11 +73,12 @@ public class Command implements Serializable {
     private boolean done;
 
     public Command(
-            @JsonProperty("command")String command,
-            @JsonProperty("value")String value,
-            @JsonProperty("commandScheduledDate") String commandScheduledDate) {
+            String command,
+            String value,
+           String commandScheduledDate) {
         this.command = Commands.valueOf(command).setValue(Integer.parseInt(value));
-        this.commandScheduledDate = Controller.stringToLocalDate(commandScheduledDate);
+        if(!commandScheduledDate.equals("null"))
+            this.commandScheduledDate = Controller.stringToLocalDate(commandScheduledDate);
     }
 
     public Command(Commands command, LocalDateTime commandSentDate, LocalDateTime commandScheduledDate) {

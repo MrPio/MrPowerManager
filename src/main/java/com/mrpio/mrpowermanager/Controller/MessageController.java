@@ -41,8 +41,13 @@ public class MessageController {
 //                "\n"+ Arrays.toString(args.split("~")));
         var newToken=Controller.keepOnlyAlphaNum(token);
         var newPcName=Controller.keepOnlyAlphaNum(pcName);
-        Command command= Command.class.getConstructor(String.class,String.class,String.class)
-                .newInstance((Object[]) args.split("~"));
+        var constructor=Command.class.getConstructor(String.class,String.class,String.class);
+        Command command;
+        if(args.split("~").length==2)
+            command=constructor.newInstance(args.split("~")[0],args.split("~")[1],"null");
+        else
+            command=constructor.newInstance((Object[]) args.split("~"));
+
         simpMessagingTemplate.convertAndSend("/server/"+newToken+"/"+newPcName+"/commands", command);
     }
 
