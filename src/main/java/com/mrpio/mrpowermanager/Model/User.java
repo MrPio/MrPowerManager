@@ -9,6 +9,7 @@ import org.springframework.scheduling.annotation.Async;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -135,7 +136,7 @@ public class User implements Serializable {
     }
 
     public void clientGoOnline() {
-        lastClientOnline=LocalDateTime.now();
+        lastClientOnline=LocalDateTime.now(ZoneOffset.UTC);
         if (!isClientOnline) {
             var s = new Serialization(DIR + "clients", token + ".user");
             s.saveObject("online");
@@ -150,7 +151,7 @@ public class User implements Serializable {
     void scheduleGoOffline(){
         Executors.newScheduledThreadPool(1).schedule(
                 ()->{
-                    if(SECONDS.between(lastClientOnline,LocalDateTime.now())<8){
+                    if(SECONDS.between(lastClientOnline,LocalDateTime.now(ZoneOffset.UTC))<35){
                         System.out.println("rimando...");
                         scheduleGoOffline();
                         return;

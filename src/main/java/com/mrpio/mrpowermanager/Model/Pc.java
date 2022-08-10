@@ -2,6 +2,7 @@ package com.mrpio.mrpowermanager.Model;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +20,7 @@ public class Pc implements Serializable {
     private final HashMap<String, String> keys;
     private int maxWattage;
     private final ArrayList<WattageEntry> wattageEntries;
+    private final ArrayList<WattageEntry> oldWattageEntries;
     private int batteryCapacityMw;
 
     public Pc(String name) {
@@ -30,6 +32,7 @@ public class Pc implements Serializable {
         maxWattage = 0;
         batteryCapacityMw = 0;
         wattageEntries = new ArrayList<>();
+        oldWattageEntries = new ArrayList<>();
     }
 
     public String getName() {
@@ -45,12 +48,12 @@ public class Pc implements Serializable {
     }
 
     public State getState() {
-        return Math.abs(SECONDS.between(pcStatus.updated, LocalDateTime.now())) < 30 ? State.ONLINE : State.OFFLINE;
+        return Math.abs(SECONDS.between(pcStatus.updated, LocalDateTime.now(ZoneOffset.UTC))) < 30 ? State.ONLINE : State.OFFLINE;
     }
 
-    public ArrayList<Command> getCommandList() {
-        return commandList;
-    }
+//    public ArrayList<Command> getCommandList() {
+//        return commandList;
+//    }
 
     public int getMaxWattage() {
         return maxWattage;
@@ -66,25 +69,25 @@ public class Pc implements Serializable {
     }
 
     public double getWattage() {
-        if(wattageEntries.isEmpty())
+        if (wattageEntries.isEmpty())
             return 0;
         return wattageEntries.get(wattageEntries.size() - 1).calculateWattage(maxWattage);
     }
 
     public double getOnlyGpuWattage() {
-        if(wattageEntries.isEmpty())
+        if (wattageEntries.isEmpty())
             return 0;
         return wattageEntries.get(wattageEntries.size() - 1).calculateOnlyGpuWattage(maxWattage);
     }
 
     public double getBatteryCharging() {
-        if(wattageEntries.isEmpty())
+        if (wattageEntries.isEmpty())
             return 0;
         return wattageEntries.get(wattageEntries.size() - 1).getBatteryChargeRate();
     }
 
     public double getBatteryDischarging() {
-        if(wattageEntries.isEmpty())
+        if (wattageEntries.isEmpty())
             return 0;
         return wattageEntries.get(wattageEntries.size() - 1).getBatteryDischargeRate();
     }
@@ -108,17 +111,25 @@ public class Pc implements Serializable {
         return "command scheduled successfully!";
     }
 
+    /**
+     * Passa tutti i comandi con la flag isDone falsa, non c'è alcun controllo sulla data di schedule per motivi di Fuso orario
+     * ogni comando che restituisco nel JSON di risposta lo segno come eseguito, lasciando al server il compito di gestire lo schedule.
+     */
     public ArrayList<Command> listAvailableCommands() {
-        var now = LocalDateTime.now().minusMinutes(10);
+//        var now = LocalDateTime.now(ZoneOffset.UTC).minusMinutes(10);
         var commands = new ArrayList<Command>();
         var toRemove = new ArrayList<Command>();
         for (var c : commandList) {
-            if (!c.isDone() && now.isBefore(c.getCommandScheduledDate())) {
+            if (!c.isDone() /*&& now.isBefore(c.getCommandScheduledDate())*/) {
                 if (c.getCommandReceivedDate() == null)
-                    c.setCommandReceivedDate(now);
+                    c.setCommandReceivedDate(LocalDateTime.now(ZoneOffset.UTC));
                 commands.add(c);
-            } else if (c.isDone() || MINUTES.between(now, c.getCommandScheduledDate()) < -15)
+                c.setDone(true);
+            } else {
                 toRemove.add(c);
+            }
+/*             else if (c.isDone() || MINUTES.between(now, c.getCommandScheduledDate()) < -15)
+                toRemove.add(c);*/
         }
         commandList.removeAll(toRemove);
         return commands;
@@ -130,7 +141,7 @@ public class Pc implements Serializable {
                 if (c.isDone())
                     return "this command was already over!";
                 else {
-                    c.setCommandDoneDate(LocalDateTime.now());
+                    c.setCommandDoneDate(LocalDateTime.now(ZoneOffset.UTC));
                     c.setDone(true);
                     return "command ended successfully!";
                 }
@@ -239,7 +250,7 @@ public class Pc implements Serializable {
                 else if (alsoEstimateEmptyZones)
                     weightedSum += millisBetween * calculateWattageMean
                             (lastWatt.getDateTime().minusMinutes(10), watt.getDateTime().plusMinutes(10),
-                                    onlyGpu, onlyBatteryCharge, false, false, false, false,false);
+                                    onlyGpu, onlyBatteryCharge, false, false, false, false, false);
             }
             lastWatt = watt;
         }
@@ -257,29 +268,29 @@ public class Pc implements Serializable {
         for (int i = 0; i < intervals; ++i) {
             start2 = start2.plusSeconds(seconds);
 //            if (seconds <= 30) {
-                data.add(0d);
-                for (var watt : wattageEntries) {
-                    if (watt.getDateTime().isAfter(start) && watt.getDateTime().isBefore(start2)) {
-                        data.remove(data.size() - 1);
-                        if (onlyGpu)
-                            data.add((double) watt.calculateOnlyGpuWattage(maxWattage));
-                        else if (onlyBatteryCharge)
-                            data.add((double) watt.calculateOnlyBatteryCharge());
-                        else if (cpu)
-                            data.add((double) watt.getCpuPercentage());
-                        else if (gpu)
-                            data.add((double) watt.getGpuPercentage());
-                        else if (ram)
-                            data.add((double) watt.getRamPercentage());
-                        else if (disk)
-                            data.add((double) watt.getDiskPercentage());
-                        else if (temp)
-                            data.add((double) watt.getTemp());
-                        else
-                            data.add((double) watt.calculateWattage(maxWattage));
-                        break;
-                    }
+            data.add(0d);
+            for (var watt : wattageEntries) {
+                if (watt.getDateTime().isAfter(start) && watt.getDateTime().isBefore(start2)) {
+                    data.remove(data.size() - 1);
+                    if (onlyGpu)
+                        data.add((double) watt.calculateOnlyGpuWattage(maxWattage));
+                    else if (onlyBatteryCharge)
+                        data.add((double) watt.calculateOnlyBatteryCharge());
+                    else if (cpu)
+                        data.add((double) watt.getCpuPercentage());
+                    else if (gpu)
+                        data.add((double) watt.getGpuPercentage());
+                    else if (ram)
+                        data.add((double) watt.getRamPercentage());
+                    else if (disk)
+                        data.add((double) watt.getDiskPercentage());
+                    else if (temp)
+                        data.add((double) watt.getTemp());
+                    else
+                        data.add((double) watt.calculateWattage(maxWattage));
+                    break;
                 }
+            }
 //            } else
 //                data.add(Math.round(calculateWattageMean(start, start2, onlyGpu, onlyBatteryCharge, cpu, gpu, ram, disk,temp) * 100d) / 100d);
             start = start.plusSeconds(seconds);
@@ -287,6 +298,7 @@ public class Pc implements Serializable {
         return data;
     }
 
+    //just for debug
     public void generateRandomWattageData(LocalDateTime start, LocalDateTime end, int interval) {
         //only today
         var steps = 3600 * 24 / interval;
@@ -299,7 +311,26 @@ public class Pc implements Serializable {
     }
 
 
-//    public ArrayList<WattageEntry> getWattageEntries() {
-//        return wattageEntries;
-//    }
+    public void cleanWattageEntries() {
+        var minDate = LocalDateTime.now(ZoneOffset.UTC).minusDays(2);
+        var toMove = new ArrayList<WattageEntry>();
+        for (var wattage : wattageEntries)
+            if (wattage.getDateTime().isBefore(minDate))
+                toMove.add(wattage);
+        wattageEntries.removeAll(toMove);
+        var lastDate = oldWattageEntries.isEmpty() ? minDate.minusYears(10) :
+                oldWattageEntries.get(oldWattageEntries.size() - 1).getDateTime();
+        var toAdd = new ArrayList<WattageEntry>();
+        for (var wattage : toMove) {
+            if (MINUTES.between(lastDate, wattage.getDateTime()) >= 24) {
+                toAdd.add(wattage);
+                lastDate = wattage.getDateTime();
+            }
+        }
+        oldWattageEntries.addAll(toAdd);
+    }
+
+    public ArrayList<WattageEntry> getWattageEntries() {
+        return wattageEntries;
+    }
 }

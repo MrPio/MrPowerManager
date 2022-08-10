@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 public class PcStatus implements Serializable {
@@ -16,7 +17,7 @@ public class PcStatus implements Serializable {
     LocalDateTime updated;
 
     public PcStatus() {
-        updated = LocalDateTime.now();
+        updated = LocalDateTime.now(ZoneOffset.UTC);
     }
 
     public PcStatus(@JsonProperty("wifi") boolean wifi,
@@ -61,7 +62,7 @@ public class PcStatus implements Serializable {
         this.isLocked=isLocked;
         this.batteryChargeRate=batteryChargeRate;
         this.batteryDischargeRate=batteryDischargeRate;
-        updated = LocalDateTime.now();
+        updated = LocalDateTime.now(ZoneOffset.UTC);
     }
 
     public PcStatus(String wifi, String bluetooth, String batteryPlugged, String airplane,
@@ -181,7 +182,7 @@ public class PcStatus implements Serializable {
     }
 
     public int getWattage1000(){
-        return new WattageEntry(LocalDateTime.now(),isBatteryPlugged(),cpuLevel,gpuLevel,ramLevel,
+        return new WattageEntry(LocalDateTime.now(ZoneOffset.UTC),isBatteryPlugged(),cpuLevel,gpuLevel,ramLevel,
                 storageLevel,gpuTemp,batteryPerc,getBatteryChargeRate(),getBatteryDischargeRate()).calculateWattage(1000);
     }
 }

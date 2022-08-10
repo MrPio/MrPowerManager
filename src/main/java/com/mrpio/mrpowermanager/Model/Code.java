@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Random;
@@ -23,7 +24,7 @@ public class Code implements Serializable {
     public Code(String code, String token, String pcName) {
         this.code = code;
         this.token = token;
-        this.generatedDate = LocalDateTime.now();
+        this.generatedDate = LocalDateTime.now(ZoneOffset.UTC);
         this.pcName = pcName;
     }
 
@@ -50,7 +51,7 @@ public class Code implements Serializable {
             codes = (ArrayList<Code>) serialization.loadObject();
 
         //rimuovo vecchi codici
-        codes.removeIf(code -> Math.abs(MINUTES.between(code.getGeneratedDate(), LocalDateTime.now())) > 5);
+        codes.removeIf(code -> Math.abs(MINUTES.between(code.getGeneratedDate(), LocalDateTime.now(ZoneOffset.UTC))) > 5);
 
         String code = String.valueOf((new Random().nextInt(1000000)));
         codes.add(new Code(code, token, pcName));
@@ -66,7 +67,7 @@ public class Code implements Serializable {
 
         for (var c : codes) {
             if (c.getCode().equals(code)) {
-                if (Math.abs(MINUTES.between(c.getGeneratedDate(), LocalDateTime.now())) > 4) {
+                if (Math.abs(MINUTES.between(c.getGeneratedDate(), LocalDateTime.now(ZoneOffset.UTC))) > 4) {
                     codes.remove(c);
                     serialization.saveObject(codes);
                     return new ResponseEntity<>(new JSONObject(Map.of("result", "this code has expired!")), HttpStatus.OK);

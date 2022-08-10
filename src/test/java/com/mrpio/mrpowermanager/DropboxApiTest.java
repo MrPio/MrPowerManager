@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 import static java.time.temporal.ChronoUnit.MINUTES;
 
@@ -33,7 +34,7 @@ class DropboxApiTest {
     }
     @Test
     void dateTest(){
-        var now = LocalDateTime.now().minusMinutes(10);
-        System.out.println(MINUTES.between(LocalDateTime.now(),now));
+        var now = LocalDateTime.now(ZoneOffset.UTC).minusMinutes(10);
+        System.out.println(MINUTES.between(LocalDateTime.now(ZoneOffset.UTC),now));
     }
 }

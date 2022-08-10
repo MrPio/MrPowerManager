@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class Command implements Serializable {
-    public enum Commands {
+    /*public enum Commands {
         SOUND_VALUE,
         BRIGHTNESS_VALUE,
         BRIGHTNESS_UP,
@@ -44,6 +44,13 @@ public class Command implements Serializable {
         TRACK_PREVIOUS,
         TRACK_NEXT,
 
+        WATTAGE_DATA_STREAM_START,
+        WATTAGE_DATA_STREAM_STOP,
+
+        CLIENT_ONLINE,
+        CLIENT_OFFLINE,
+
+
         SCREENSHOT;
 
         private int value = 50;
@@ -55,11 +62,11 @@ public class Command implements Serializable {
         public Commands setValue(int value) {
             this.value = value;return this;
         }
-    }
+    }*/
 
-    private final Commands command;
+    private final String command;
+    private int value;
     private int id;
-    private boolean scheduled;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime commandSentDate;
@@ -75,19 +82,21 @@ public class Command implements Serializable {
     public Command(
             String command,
             String value,
-           String commandScheduledDate) {
-        this.command = Commands.valueOf(command).setValue(Integer.parseInt(value));
-        if(!commandScheduledDate.equals("null"))
+            String commandScheduledDate) {
+        this.command = command;
+        this.value = Integer.parseInt(value);
+        if (!commandScheduledDate.equals("null"))
             this.commandScheduledDate = Controller.stringToLocalDate(commandScheduledDate);
     }
 
-    public Command(Commands command, LocalDateTime commandSentDate, LocalDateTime commandScheduledDate) {
+    public Command(String command,int value, LocalDateTime commandSentDate, LocalDateTime commandScheduledDate) {
         this.command = command;
+        this.value=value;
         this.commandSentDate = commandSentDate;
         this.commandScheduledDate = commandScheduledDate;
     }
 
-    public Commands getCommand() {
+    public String getCommand() {
         return command;
     }
 
@@ -97,10 +106,6 @@ public class Command implements Serializable {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public int getCommandValue() {
-        return command.getValue();
     }
 
     public LocalDateTime getCommandSentDate() {
@@ -143,16 +148,7 @@ public class Command implements Serializable {
         this.done = done;
     }
 
-    @Override
-    public String toString() {
-        return "Command{" +
-                "command=" + command +
-                ", id=" + id +
-                ", commandSentDate=" + commandSentDate +
-                ", commandScheduledDate=" + commandScheduledDate +
-                ", commandReceivedDate=" + commandReceivedDate +
-                ", commandDoneDate=" + commandDoneDate +
-                ", done=" + done +
-                '}';
+    public int getCommandValue() {
+        return value;
     }
 }

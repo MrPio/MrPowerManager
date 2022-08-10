@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 
 import java.io.File;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,7 +34,7 @@ public class MainService {
         var user = User.load(token);
         if (user != null)
             return new ResponseEntity<>(new JSONObject(Map.of("result", "user already in database!")), HttpStatus.OK);
-        (new User(LocalDateTime.now(), token, email)).scheduleSave(true);
+        (new User(LocalDateTime.now(ZoneOffset.UTC), token, email)).scheduleSave(true);
         return new ResponseEntity<>(new JSONObject(Map.of("result", "user registered successfully!")), HttpStatus.OK);
     }
 
@@ -70,20 +72,19 @@ public class MainService {
 
     }
 
-    public ResponseEntity<Object> requestScheduleCommand(String token, String pcName, Command.Commands command, String scheduleDate) {
+    public ResponseEntity<Object> requestScheduleCommand(String token, String pcName, String command,int value, String scheduleDate) {
         var result = validateUserAndPc(token, pcName);
         if (result.getClass() == ResponseEntity.class)
             return (ResponseEntity<Object>) result;
         var user = (User) ((Object[]) result)[0];
         var pc = (Pc) ((Object[]) result)[1];
 
-        var now = LocalDateTime.now();
+        var now = LocalDateTime.now(ZoneOffset.UTC);
         var scheduleDateNew = scheduleDate == null ? now : Controller.stringToLocalDate(scheduleDate);
-        var request = pc.addCommand(new Command(command, now, scheduleDateNew));
+        var request = pc.addCommand(new Command(command,value, now, scheduleDateNew));
         user.scheduleSave();
-        ;
-        return new ResponseEntity<>(new JSONObject(Map.of("result", request)), HttpStatus.OK);
 
+        return new ResponseEntity<>(new JSONObject(Map.of("result", request)), HttpStatus.OK);
     }
 
     public ResponseEntity<Object> requestAvailableCommands(String token, String pcName) {
@@ -95,14 +96,13 @@ public class MainService {
 
         var commands = pc.listAvailableCommands();
         user.scheduleSave();
-        ;
+
         var httpStatus = HttpStatus.OK;
         if (commands.size() == 0)
             httpStatus = HttpStatus.NO_CONTENT;
+
         return new ResponseEntity<>(new JSONObject(Map.of("result", "list received successfully!",
                 "commands", commands)), httpStatus);
-
-
     }
 
     public ResponseEntity<Object> requestEndCommand(String token, String pcName, Integer id) {
@@ -316,7 +316,11 @@ public class MainService {
         var result = validateUserAndPc(token, pcName);
         if (result.getClass() == ResponseEntity.class)
             return (ResponseEntity<Object>) result;
+        var user = (User) ((Object[]) result)[0];
         var pc = (Pc) ((Object[]) result)[1];
+
+        pc.cleanWattageEntries();
+        user.scheduleSave();
 
         var watts = pc.requestWattageData(start, end, intervals,onlyGpu,onlyBatteryCharge
                 ,false,false,false,false,false);
@@ -369,7 +373,7 @@ public class MainService {
     }
 
     public ResponseEntity<Object> requestGenerateRandomWattageData(String token, String pcName, int interval) {
-        var now = LocalDateTime.now();
+        var now = LocalDateTime.now(ZoneOffset.UTC);
         var start = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0);
         var end = start.plusDays(1);
 

@@ -23,19 +23,19 @@ public class Controller {
 
     final String ENDPOINT_SIGNUP = "/signup";
     final String ENDPOINT_LOGIN = "/login";
-    final String ENDPOINT_ADD_PC = "/addPc";//DEPRECATED
-    final String ENDPOINT_GET_PC_STATUS = "/getPcStatus";//<----------------------WEBSOCKET
-    final String ENDPOINT_SCHEDULE_COMMAND = "/scheduleCommand";//<----------------------WEBSOCKET
-    final String ENDPOINT_AVAILABLE_COMMANDS = "/availableCommands";//<----------------------WEBSOCKET
-    final String ENDPOINT_END_COMMAND = "/endCommand";//<----------------------WEBSOCKET
+    final String ENDPOINT_ADD_PC = "/addPc";//--------------------------------------------DEPRECATED
+    final String ENDPOINT_GET_PC_STATUS = "/getPcStatus";//TODO<--------------------------WEBSOCKET
+    final String ENDPOINT_SCHEDULE_COMMAND = "/scheduleCommand";//------------------------restored
+    final String ENDPOINT_AVAILABLE_COMMANDS = "/availableCommands";//--------------------restored
+    final String ENDPOINT_END_COMMAND = "/endCommand";//----------------------------------DEPRECATED
     final String ENDPOINT_REQUEST_CODE = "/requestCode";
-    final String ENDPOINT_VALIDATE_CODE = "/validateCode";//TODO<----------------------WEBSOCKET
-    final String ENDPOINT_UPDATE_PC_STATUS = "/updatePcStatus";//<----------------------WEBSOCKET
+    final String ENDPOINT_VALIDATE_CODE = "/validateCode";//TODO<-------------------------WEBSOCKET
+    final String ENDPOINT_UPDATE_PC_STATUS = "/updatePcStatus";//<------------------------WEBSOCKET
     final String ENDPOINT_UPLOAD_WATTAGE_ENTRIES = "/uploadWattageEntries";
     final String ENDPOINT_STORE_PASSWORD = "/storePassword";
     final String ENDPOINT_DELETE_PASSWORD = "/deletePassword";
-    final String ENDPOINT_SEND_KEY = "/sendKey";//TODO<----------------------WEBSOCKET
-    final String ENDPOINT_REQUEST_KEY = "/requestKey";//TODO<----------------------WEBSOCKET
+    final String ENDPOINT_SEND_KEY = "/sendKey";//TODO<-----------------------------------WEBSOCKET
+    final String ENDPOINT_REQUEST_KEY = "/requestKey";//TODO<-----------------------------WEBSOCKET
     final String ENDPOINT_DELETE_ACCOUNT = "/deleteAccount";
     final String ENDPOINT_DELETE_PC = "/deletePc";
     final String ENDPOINT_ADD_PC_MAX_WATTAGE = "/addPcMaxWattage";//given by client
@@ -105,12 +105,10 @@ public class Controller {
     public ResponseEntity<Object> requestScheduleSleep(
             @RequestParam(value = "token") String token,
             @RequestParam(value = "pcName") String pcName,
-            @RequestParam(value = "command") Command.Commands command,
+            @RequestParam(value = "command") String command,
             @RequestParam(value = "value", defaultValue = "50") Integer value,
             @RequestParam(value = "scheduleDate", required = false) String scheduleDate) {
-        if (0 <= value && value <= 100)
-            command.setValue(value);
-        return mainService.requestScheduleCommand(token, pcName, command, scheduleDate);
+        return mainService.requestScheduleCommand(token, pcName, command,value, scheduleDate);
     }
 
     @RequestMapping(path = ENDPOINT_AVAILABLE_COMMANDS, method = RequestMethod.GET)
