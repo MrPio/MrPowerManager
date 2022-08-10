@@ -179,4 +179,9 @@ public class PcStatus implements Serializable {
     public int getBatteryDischargeRate() {
         return batteryDischargeRate;
     }
+
+    public int getWattage1000(){
+        return new WattageEntry(LocalDateTime.now(),isBatteryPlugged(),cpuLevel,gpuLevel,ramLevel,
+                storageLevel,gpuTemp,batteryPerc,getBatteryChargeRate(),getBatteryDischargeRate()).calculateWattage(1000);
+    }
 }

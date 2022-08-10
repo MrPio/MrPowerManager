@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @RestController
 public class MessageController {
 
-    final String ENDPOINT_SIGNUP = "/scheduleCommand/{token}/{pcName}";
+    final String ENDPOINT_SCHEDULE_COMMAND = "/scheduleCommand/{token}/{pcName}";
     final String ENDPOINT_UPDATE_PC_STATUS = "/updatePcStatus/{token}/{pcName}";
     final String ENDPOINT_SET_ONLINE = "/setOnline/{token}/{pcName}";
 
@@ -34,7 +34,7 @@ public class MessageController {
         simpMessagingTemplate.convertAndSend("/topic/messages/" + to, message);
     }
 
-    @MessageMapping(ENDPOINT_SIGNUP)
+    @MessageMapping(ENDPOINT_SCHEDULE_COMMAND)
     public void scheduleCommand(
             @DestinationVariable String token,
             @DestinationVariable String pcName,
@@ -75,8 +75,8 @@ public class MessageController {
             @DestinationVariable String pcName,
             String arg) {
         var newToken = Controller.keepOnlyAlphaNum(token);
-        simpMessagingTemplate.convertAndSend("/client/" + newToken + "/online",
-                Map.of("pcName",pcName,"online",Boolean.valueOf(arg)));
+        var map=Map.of("pcName",pcName,"online",Boolean.valueOf(arg));
+        simpMessagingTemplate.convertAndSend("/client/" + newToken + "/online", map);
     }
 
 
