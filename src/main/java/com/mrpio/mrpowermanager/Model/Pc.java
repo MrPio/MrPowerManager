@@ -330,7 +330,7 @@ public class Pc implements Serializable {
         oldWattageEntries.addAll(toAdd);
     }
 
-    public ArrayList<WattageEntry> getWattageEntries() {
+/*    public ArrayList<WattageEntry> getWattageEntries() {
         return wattageEntries;
-    }
+    }*/
 }
