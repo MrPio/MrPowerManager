@@ -55,13 +55,19 @@ public class User implements Serializable {
 
         if (!scheduled) {
             System.out.println("Saving...");
-            Executors.newScheduledThreadPool(1).schedule(this::save, 300, TimeUnit.SECONDS);
+            new Thread(this::save).start();
             scheduled = true;
         }
         System.out.println("took ---> " + (System.nanoTime() - start) / 1000000d);
     }
 
+
     private void save() {
+        try {
+            Thread.sleep(300*1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         Serialization s = new Serialization(DIR, token + ".dat");
         s.saveObject(this);
@@ -70,6 +76,7 @@ public class User implements Serializable {
                 "/database/" + s.getFileName());
         System.out.println("Saved");
         scheduled = false;
+        Thread.currentThread().stop();
     }
 
     public String getEmail() {
