@@ -44,7 +44,6 @@ public class User implements Serializable {
         return token;
     }
 
-    @Async
     public void scheduleSave(boolean... force) {
         var start = System.nanoTime();
 
@@ -154,20 +153,25 @@ public class User implements Serializable {
         }
     }
 
-    @Async
     void scheduleGoOffline(){
-        Executors.newScheduledThreadPool(1).schedule(
-                ()->{
-                    if(SECONDS.between(lastClientOnline,LocalDateTime.now(ZoneOffset.UTC))<35){
+                new Thread(()->{
+                    try {
+                        Thread.sleep(30);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    while (SECONDS.between(lastClientOnline,LocalDateTime.now(ZoneOffset.UTC))<35){
                         System.out.println("rimando...");
-                        scheduleGoOffline();
-                        return;
+                        try {
+                            Thread.sleep(30);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     }
                     System.out.println("elimino...");
                     DropboxApi.deleteFile("/database/clients/" + token + ".user");
                     isClientOnline=false;
-                },
-                30, TimeUnit.SECONDS);
+                }).start();
 
     }
 }
