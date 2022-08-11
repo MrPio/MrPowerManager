@@ -109,9 +109,8 @@ public class WattageEntry implements Serializable {
         if(!isPlugged)
             return (int) Math.round(batteryDischargeRate/1000d);
 
-//ATTENZIONE MAX WATTAGE OLTRE 500 FANNO ESPLODERE IL CALCOLO!!
-//        if (maxWattage >= 500)
-//            return (int) (maxWattage * 0.4);
+        if (maxWattage >= 500)
+            return (int) (maxWattage * 0.4);
         var cpuClipped = Math.max(cpuPercentage, 3);
         var a = 0.039946d * maxWattage + 1.8654d;
         var c = 0.00063243d * maxWattage + 0.27954d;

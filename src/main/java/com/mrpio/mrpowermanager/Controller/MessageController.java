@@ -3,6 +3,7 @@ package com.mrpio.mrpowermanager.Controller;
 import com.mrpio.mrpowermanager.Model.Command;
 import com.mrpio.mrpowermanager.Model.PcStatus;
 import com.mrpio.mrpowermanager.Model.UserStorage;
+import com.mrpio.mrpowermanager.Model.WattageEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -10,6 +11,8 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.lang.reflect.InvocationTargetException;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -66,6 +69,18 @@ public class MessageController {
                         ((c) -> c.getParameterTypes().length > 1 && c.getParameterTypes()[1] == String.class)
                 .collect(Collectors.toList()).get(0);
         var pcStatus = (PcStatus) constructor.newInstance((Object[]) args.split("~"));
+        //setMaxWattage
+        for(var user: Controller.usersCache)
+            if(user.getToken().equals(token) && user.getPc(pcName)!=null)
+                pcStatus.setWattage(
+                        new WattageEntry(LocalDateTime.now(ZoneOffset.UTC),pcStatus.isBatteryPlugged(),
+                                pcStatus.getCpuLevel(),pcStatus.getGpuLevel(),pcStatus.getRamLevel(),
+                                pcStatus.getStorageLevel(),pcStatus.getGpuTemp(),
+                                pcStatus.getBatteryPerc(),pcStatus.getBatteryChargeRate(),
+                                pcStatus.getBatteryDischargeRate())
+                                .calculateWattage(user.getPc(pcName).getMaxWattage())
+                );
+
         simpMessagingTemplate.convertAndSend("/client/" + newToken + "/" + newPcName + "/status", pcStatus);
     }
 

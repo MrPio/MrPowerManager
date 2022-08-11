@@ -2,6 +2,7 @@ package com.mrpio.mrpowermanager.Model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.mrpio.mrpowermanager.Controller.Controller;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -11,7 +12,7 @@ import java.time.format.DateTimeFormatter;
 public class PcStatus implements Serializable {
     private boolean wifi, bluetooth, batteryPlugged, airplane, mute, redLight, saveBattery, hotspot,isLocked;
     private int sound, brightness, batteryPerc, batteryMinutes, cpuLevel, ramLevel, redLightLevel,
-            storageLevel,gpuLevel,gpuTemp,batteryChargeRate,batteryDischargeRate;
+            storageLevel,gpuLevel,gpuTemp,batteryChargeRate,batteryDischargeRate,wattage=0;
 
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     LocalDateTime updated;
@@ -181,8 +182,11 @@ public class PcStatus implements Serializable {
         return batteryDischargeRate;
     }
 
-    public int getWattage1000(){
-        return new WattageEntry(LocalDateTime.now(ZoneOffset.UTC),isBatteryPlugged(),cpuLevel,gpuLevel,ramLevel,
-                storageLevel,gpuTemp,batteryPerc,getBatteryChargeRate(),getBatteryDischargeRate()).calculateWattage(1000);
+    public void setWattage(int wattage) {
+        this.wattage = wattage;
+    }
+
+    public int getWattage(){
+        return wattage;
     }
 }
