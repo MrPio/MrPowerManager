@@ -155,15 +155,10 @@ public class User implements Serializable {
 
     void scheduleGoOffline(){
                 new Thread(()->{
-                    try {
-                        Thread.sleep(30);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
                     while (SECONDS.between(lastClientOnline,LocalDateTime.now(ZoneOffset.UTC))<35){
                         System.out.println("rimando...");
                         try {
-                            Thread.sleep(30);
+                            Thread.sleep(30*1000);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
