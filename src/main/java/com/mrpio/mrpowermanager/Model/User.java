@@ -54,7 +54,14 @@ public class User implements Serializable {
 
         if (!scheduled) {
             System.out.println("Saving...");
-            new Thread(this::save).start();
+            new Thread(()->{
+                try {
+                    Thread.sleep(300*1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                save();
+            }).start();
             scheduled = true;
         }
         System.out.println("took ---> " + (System.nanoTime() - start) / 1000000d);
@@ -62,12 +69,6 @@ public class User implements Serializable {
 
 
     private void save() {
-        try {
-            Thread.sleep(300*1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
         Serialization s = new Serialization(DIR, token + ".dat");
         s.saveObject(this);
         DropboxApi.uploadFile(
