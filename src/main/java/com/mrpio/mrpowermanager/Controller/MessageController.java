@@ -26,8 +26,6 @@ public class MessageController {
     final String ENDPOINT_SET_CLIENT_ONLINE = "/setOnline/{token}";
     final String ENDPOINT_SEND_MESSAGE = "/sendMessage/{token}/{pcName}";
 
-
-
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
 

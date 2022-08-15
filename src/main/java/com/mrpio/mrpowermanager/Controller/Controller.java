@@ -4,8 +4,10 @@ import com.mrpio.mrpowermanager.Model.*;
 import com.mrpio.mrpowermanager.Service.MainService;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
@@ -45,6 +47,8 @@ public class Controller {
     final String ENDPOINT_REQUEST_TODAY_WATTAGE = "/requestTodayWattage";
     final String ENDPOINT_GENERATE_RANDOM_WATTAGE_DATA = "/generateRandomWattageData";
 
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
 
     static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
     static DateTimeFormatter formatterFull = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -83,6 +87,11 @@ public class Controller {
     public ResponseEntity<Object> requestLogin(
             @RequestParam(value = "token") String token,
             @RequestParam(value = "imTheClient", defaultValue = "false") boolean imTheClient) {
+        if (imTheClient){
+            var newToken = Controller.keepOnlyAlphaNum(token);
+            var map=Map.of("online",true);
+            simpMessagingTemplate.convertAndSend("/server/" + newToken + "/online", map);
+        }
         return mainService.requestLogin(token, imTheClient);
     }
 

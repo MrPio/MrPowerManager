@@ -155,8 +155,6 @@ public class User implements Serializable {
             isClientOnline=true;
             scheduleGoOffline();
         }*/
-
-        new MessageController().setClientOnline(token,"true");
     }
 
     void scheduleGoOffline(){
