@@ -23,6 +23,7 @@ public class MessageController {
     final String ENDPOINT_SCHEDULE_COMMAND = "/scheduleCommand/{token}/{pcName}";
     final String ENDPOINT_UPDATE_PC_STATUS = "/updatePcStatus/{token}/{pcName}";
     final String ENDPOINT_SET_ONLINE = "/setOnline/{token}/{pcName}";
+    final String ENDPOINT_SET_CLIENT_ONLINE = "/setOnline/{token}";
     final String ENDPOINT_SEND_MESSAGE = "/sendMessage/{token}/{pcName}";
 
 
@@ -94,6 +95,15 @@ public class MessageController {
         var newToken = Controller.keepOnlyAlphaNum(token);
         var map=Map.of("pcName",pcName,"online",Boolean.valueOf(arg));
         simpMessagingTemplate.convertAndSend("/client/" + newToken + "/online", map);
+    }
+
+    @MessageMapping(ENDPOINT_SET_CLIENT_ONLINE)
+    public void setClientOnline(
+            @DestinationVariable String token,
+            String arg) {
+        var newToken = Controller.keepOnlyAlphaNum(token);
+        var map=Map.of("online",Boolean.valueOf(arg));
+        simpMessagingTemplate.convertAndSend("/server/" + newToken + "/online", map);
     }
 
     @MessageMapping(ENDPOINT_SEND_MESSAGE)

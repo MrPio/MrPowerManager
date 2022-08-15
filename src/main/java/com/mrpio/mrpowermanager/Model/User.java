@@ -2,6 +2,7 @@ package com.mrpio.mrpowermanager.Model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.mrpio.mrpowermanager.Controller.Controller;
+import com.mrpio.mrpowermanager.Controller.MessageController;
 import com.mrpio.mrpowermanager.Service.DropboxApi;
 import com.mrpio.mrpowermanager.Service.Serialization;
 import org.json.simple.JSONObject;
@@ -11,6 +12,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -143,15 +145,18 @@ public class User implements Serializable {
     }
 
     public void clientGoOnline() {
+
         lastClientOnline=LocalDateTime.now(ZoneOffset.UTC);
-        if (!isClientOnline) {
+/*        if (!isClientOnline) {
             var s = new Serialization(DIR + "clients", token + ".user");
             s.saveObject("online");
             new Thread(() -> DropboxApi.uploadFile(s.getFullPath(),
                     "/database/clients/" + s.getFileName())).start();
             isClientOnline=true;
             scheduleGoOffline();
-        }
+        }*/
+
+        new MessageController().setClientOnline(token,"true");
     }
 
     void scheduleGoOffline(){
