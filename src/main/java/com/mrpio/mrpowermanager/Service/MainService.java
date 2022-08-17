@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 
 import java.io.File;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.Map;
@@ -162,32 +161,34 @@ public class MainService {
 
     }
 
-    public ResponseEntity<Object> requestStorePassword(String token, String pcName, String title, String password) {
+    public ResponseEntity<Object> requestStoreLogin(String token, String pcName, String title, String url, String username, String password, String args) {
         var result = validateUserAndPc(token, pcName);
         if (result.getClass() == ResponseEntity.class)
             return (ResponseEntity<Object>) result;
         var user = (User) ((Object[]) result)[0];
         var pc = (Pc) ((Object[]) result)[1];
 
-        var updated = pc.storePassword(title, password);
+        var updated = pc.storeLogin(title,url,username,password,args);
         user.scheduleSave();
 
         return new ResponseEntity<>(new JSONObject(Map.of("result",
-                updated ? "password updated successfully!" : "password stored successfully!")), HttpStatus.OK);
+                username.isBlank()?(updated ? "password updated successfully!" : "password stored successfully!")
+                        :updated ? "login updated successfully!" : "login stored successfully!"
+                )), HttpStatus.OK);
     }
 
-    public ResponseEntity<Object> requestDeletePassword(String token, String pcName, String title) {
+    public ResponseEntity<Object> requestDeleteLogin(String token, String pcName, String title) {
         var result = validateUserAndPc(token, pcName);
         if (result.getClass() == ResponseEntity.class)
             return (ResponseEntity<Object>) result;
         var user = (User) ((Object[]) result)[0];
         var pc = (Pc) ((Object[]) result)[1];
 
-        var password = pc.deletePassword(title);
+        var found = pc.deleteLogin(title);
         user.scheduleSave();
 
         return new ResponseEntity<>(new JSONObject(Map.of("result",
-                password == null ? "password not found!" : "password deleted successfully!")), HttpStatus.OK);
+                !found? "password not found!" : "password deleted successfully!")), HttpStatus.OK);
     }
 
     public ResponseEntity<Object> requestSendKey(String token, String pcName, String title, String key) {

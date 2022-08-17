@@ -16,7 +16,7 @@ public class Pc implements Serializable {
     private final String name;
     private final ArrayList<Command> commandList;
     private PcStatus pcStatus;
-    private final HashMap<String, String> passwords;
+    private final ArrayList<Login> logins;
     private final HashMap<String, String> keys;
     private int maxWattage;
     private final ArrayList<WattageEntry> wattageEntries;
@@ -27,7 +27,7 @@ public class Pc implements Serializable {
         this.name = name;
         commandList = new ArrayList<>();
         pcStatus = new PcStatus();
-        passwords = new HashMap<>();
+        logins = new ArrayList<>();
         keys = new HashMap<>();
         maxWattage = 0;
         batteryCapacityMw = 0;
@@ -39,8 +39,8 @@ public class Pc implements Serializable {
         return name;
     }
 
-    public HashMap<String, String> getPasswords() {
-        return passwords;
+    public ArrayList<Login> getLogins() {
+        return logins;
     }
 
     public PcStatus getPcStatus() {
@@ -161,14 +161,14 @@ public class Pc implements Serializable {
         this.wattageEntries.addAll(List.of(wattageEntries));
     }
 
-    public boolean storePassword(String title, String password) {
-        var update = passwords.containsKey(title);
-        this.passwords.put(title, password);
-        return update;
+    public boolean deleteLogin(String title) {
+        return logins.removeIf(login -> login.getTitle().equals(title));
     }
 
-    public String deletePassword(String title) {
-        return passwords.remove(title);
+    public boolean storeLogin(String title, String url,String username, String password,String args){
+        var update=logins.removeIf(login -> login.getTitle().equals(title));
+        this.logins.add(new Login(title,url,username,password,args));
+        return update;
     }
 
 

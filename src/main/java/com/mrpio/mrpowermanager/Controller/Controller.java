@@ -34,7 +34,7 @@ public class Controller {
     final String ENDPOINT_VALIDATE_CODE = "/validateCode";//TODO<-------------------------WEBSOCKET
     final String ENDPOINT_UPDATE_PC_STATUS = "/updatePcStatus";//<------------------------WEBSOCKET
     final String ENDPOINT_UPLOAD_WATTAGE_ENTRIES = "/uploadWattageEntries";
-    final String ENDPOINT_STORE_PASSWORD = "/storePassword";
+    final String ENDPOINT_STORE_LOGIN = "/storeLogin";
     final String ENDPOINT_DELETE_PASSWORD = "/deletePassword";
     final String ENDPOINT_SEND_KEY = "/sendKey";//TODO<-----------------------------------WEBSOCKET
     final String ENDPOINT_REQUEST_KEY = "/requestKey";//TODO<-----------------------------WEBSOCKET
@@ -170,13 +170,16 @@ public class Controller {
         return new ResponseEntity<>(new JSONObject(Map.of("result", "deleted successfully")), HttpStatus.OK);
     }
 
-    @RequestMapping(path = ENDPOINT_STORE_PASSWORD, method = RequestMethod.POST)
+    @RequestMapping(path = ENDPOINT_STORE_LOGIN, method = RequestMethod.POST)
     public ResponseEntity<Object> requestStorePassword(
             @RequestParam(value = "token") String token,
             @RequestParam(value = "pcName") String pcName,
             @RequestParam(value = "title") String title,
-            @RequestParam(value = "password") String password) {
-        return mainService.requestStorePassword(token, pcName, title, password);
+            @RequestParam(value = "url",defaultValue = "") String url,
+            @RequestParam(value = "username",defaultValue = "") String username,
+            @RequestParam(value = "password") String password,
+            @RequestParam(value = "args",defaultValue = "") String args) {
+        return mainService.requestStoreLogin(token, pcName, title,url,username, password,args);
     }
 
     @RequestMapping(path = ENDPOINT_DELETE_PASSWORD, method = RequestMethod.DELETE)
@@ -184,7 +187,7 @@ public class Controller {
             @RequestParam(value = "token") String token,
             @RequestParam(value = "pcName") String pcName,
             @RequestParam(value = "title") String title) {
-        return mainService.requestDeletePassword(token, pcName, title);
+        return mainService.requestDeleteLogin(token, pcName, title);
     }
 
     @RequestMapping(path = ENDPOINT_SEND_KEY, method = RequestMethod.POST)
