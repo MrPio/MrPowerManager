@@ -10,7 +10,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 public class PcStatus implements Serializable {
-    private boolean wifi, bluetooth, batteryPlugged, airplane, mute, redLight, saveBattery, hotspot,isLocked;
+    private boolean wifi, bluetooth, batteryPlugged, airplane, mute, redLight, saveBattery, hotspot,isClipboardShared;
     private int sound, brightness, batteryPerc, batteryMinutes, cpuLevel, ramLevel, redLightLevel,
             storageLevel,gpuLevel,gpuTemp,batteryChargeRate,batteryDischargeRate,wattage=0;
 
@@ -40,7 +40,7 @@ public class PcStatus implements Serializable {
                     @JsonProperty("redLight") boolean redLight,
                     @JsonProperty("saveBattery") boolean saveBattery,
                     @JsonProperty("hotspot") boolean hotspot,
-                    @JsonProperty("isLocked") boolean isLocked,
+                    @JsonProperty("isClipboardShared") boolean isClipboardShared,
                     @JsonProperty("redLightLevel") int redLightLevel) {
         this.wifi = wifi;
         this.bluetooth = bluetooth;
@@ -60,14 +60,14 @@ public class PcStatus implements Serializable {
         this.hotspot = hotspot;
         this.redLightLevel = redLightLevel;
         this.storageLevel=storageLevel;
-        this.isLocked=isLocked;
+        this.isClipboardShared=isClipboardShared;
         this.batteryChargeRate=batteryChargeRate;
         this.batteryDischargeRate=batteryDischargeRate;
         updated = LocalDateTime.now(ZoneOffset.UTC);
     }
 
     public PcStatus(String wifi, String bluetooth, String batteryPlugged, String airplane,
-                    String mute, String redLight, String saveBattery, String hotspot, String isLocked,
+                    String mute, String redLight, String saveBattery, String hotspot, String isClipboardShared,
                     String sound, String brightness, String batteryPerc, String batteryMinutes, String cpuLevel, String ramLevel,
                     String redLightLevel, String storageLevel, String gpuLevel, String gpuTemp, String batteryChargeRate,
                     String batteryDischargeRate) {
@@ -79,7 +79,7 @@ public class PcStatus implements Serializable {
         this.redLight = Boolean.parseBoolean(redLight);
         this.saveBattery = Boolean.parseBoolean(saveBattery);
         this.hotspot = Boolean.parseBoolean(hotspot);
-        this.isLocked = Boolean.parseBoolean(isLocked);
+        this.isClipboardShared = Boolean.parseBoolean(isClipboardShared);
         this.sound = Integer.parseInt(sound);
         this.brightness = Integer.parseInt(brightness);
         this.batteryPerc = Integer.parseInt(batteryPerc);
@@ -94,8 +94,8 @@ public class PcStatus implements Serializable {
         this.batteryDischargeRate = Integer.parseInt(batteryDischargeRate);
     }
 
-    public boolean isLocked() {
-        return isLocked;
+    public boolean isClipboardShared() {
+        return isClipboardShared;
     }
 
     public int getStorageLevel() {
