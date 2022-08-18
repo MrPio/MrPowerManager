@@ -24,7 +24,8 @@ public class MessageController {
     final String ENDPOINT_UPDATE_PC_STATUS = "/updatePcStatus/{token}/{pcName}";
     final String ENDPOINT_SET_ONLINE = "/setOnline/{token}/{pcName}";
     final String ENDPOINT_SET_CLIENT_ONLINE = "/setOnline/{token}";
-    final String ENDPOINT_SEND_MESSAGE = "/sendMessage/{token}/{pcName}";
+    final String ENDPOINT_SEND_MESSAGE_TO_CLIENT = "/sendMessage/to/client/{token}/{pcName}";
+    final String ENDPOINT_SEND_MESSAGE_TO_SERVER = "/sendMessage/to/server/{token}/{pcName}";
 
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
@@ -104,14 +105,25 @@ public class MessageController {
         simpMessagingTemplate.convertAndSend("/server/" + newToken + "/online", map);
     }
 
-    @MessageMapping(ENDPOINT_SEND_MESSAGE)
-    public void sendMessage(
+    @MessageMapping(ENDPOINT_SEND_MESSAGE_TO_CLIENT)
+    public void sendMessageToClient(
             @DestinationVariable String token,
             @DestinationVariable String pcName,
             String message) {
         var newToken = Controller.keepOnlyAlphaNum(token);
         var map=Map.of("pcName",pcName,"message",message);
-        simpMessagingTemplate.convertAndSend("/both/" + newToken + "/message", map);
+        simpMessagingTemplate.convertAndSend("/client/" + newToken + "/message", map);
+    }
+
+    @MessageMapping(ENDPOINT_SEND_MESSAGE_TO_SERVER)
+    public void sendMessageToServer(
+            @DestinationVariable String token,
+            @DestinationVariable String pcName,
+            String message) {
+        var newToken = Controller.keepOnlyAlphaNum(token);
+        var newPcName = Controller.keepOnlyAlphaNum(pcName);
+        var map=Map.of("message",message);
+        simpMessagingTemplate.convertAndSend("/server/" + newToken + "/"+newPcName+"/message", map);
     }
 
 
