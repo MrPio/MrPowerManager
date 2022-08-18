@@ -1,13 +1,15 @@
 package com.mrpio.mrpowermanager.Model;
 
-public class Login {
+import java.io.Serializable;
+
+public class Login implements Serializable {
     private String title;
     private String username;
     private String password;
     private String url;
     private String args;
 
-    public Login(String title,String url, String username, String password, String args) {
+    public Login(String title,String url, String username, String password, String args){
         this.title = title;
         this.username = username;
         this.password = password;
