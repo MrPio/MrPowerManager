@@ -113,7 +113,7 @@ public class MessageController {
         var newToken = Controller.keepOnlyAlphaNum(token);
         String r="1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111";
         StringBuilder finalR= new StringBuilder();
-        finalR.append(r.repeat(240));
+        finalR.append(r.repeat(Integer.parseInt(message)));
         var map=Map.of(
                 "pcName",pcName,"message",finalR);
 
