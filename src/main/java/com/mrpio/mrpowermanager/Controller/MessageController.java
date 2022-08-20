@@ -111,7 +111,12 @@ public class MessageController {
             @DestinationVariable String pcName,
             String message) {
         var newToken = Controller.keepOnlyAlphaNum(token);
-        var map=Map.of("pcName",pcName,"message",message);
+        String r="1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111";
+        StringBuilder finalR= new StringBuilder();
+        finalR.append(r.repeat(240));
+        var map=Map.of(
+                "pcName",pcName,"message",finalR);
+
         simpMessagingTemplate.convertAndSend("/client/" + newToken + "/message", map);
     }
 
